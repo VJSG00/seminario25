@@ -1,0 +1,69 @@
+<style>
+    body {
+        background-color: #f5f5f5;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* Hace que el body tenga al menos la altura de la ventana */
+    }
+
+    .header {
+        background: transparent;
+        padding: 2vh;
+        font-size: 4vh;
+        text-align: left;
+        padding-left: 2vw;
+        position: relative;
+        box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .header::after {
+        content: "";
+        display: block;
+        height: 1px;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        background: linear-gradient(65deg, #1e3c72, #2a5298);
+    }
+
+    .header a {
+        text-decoration: none;
+        font-weight: bold;
+        background: linear-gradient(65deg, #1e3c72, #2a5298);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .main-content {
+        flex: 1; /* Hace que este div ocupe todo el espacio disponible */
+		display: flex;
+        justify-content: center; /* Centrado horizontal */
+        align-items: center; /* Centrado vertical */
+
+    }
+
+    .footer {
+        background: #0d0d0d;
+        color: white;
+        padding: 1vh;
+        width: 100%;
+        text-align: center;
+    }
+    
+    {% block customStyle %} {% endblock %}
+</style>
+
+</head>
+<body>
+    <div class="header"><a href="/">Simprod</a></div>
+    
+    <div class="main-content">
+        {% block mainContent %} {% endblock %}
+    </div>
+
+    <div class="footer">&copy; placeholder 2025</div>
+</body>
+</html>

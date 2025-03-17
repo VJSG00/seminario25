@@ -1,0 +1,110 @@
+{% extends 'presentation/assets/main.html' %}
+
+{% block customStyle %} 
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 2vh;
+            margin: 2vh auto;
+            width: 80%;
+            border-radius: 2vh;
+            box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+        }
+        .graph-placeholder {
+            width: 100%;
+            height: 40vh;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2vh;
+            color: #555;
+            margin-bottom: 3vh;
+        }
+        .form-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2vw;
+            background: #eceff1;
+            padding: 2vh;
+            border-radius: 2vh;
+            box-shadow: 0 0.4vh 0.6vh rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #cfd8dc;
+            padding: 1vh;
+            border-radius: 1vh;
+        }
+        label {
+            font-size: 1.8vh;
+            margin-right: 1vw;
+        }
+        input {
+            width: 8vw;
+            padding: 0.8vh;
+            border: 1px solid #333;
+            border-radius: 1vh;
+            text-align: center;
+        }
+        .submit-button {
+            margin-top: 2vh;
+            padding: 1vh 2vw;
+            font-size: 1.8vh;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 1vh;
+            cursor: pointer;
+            text-align: left;
+        }
+{% endblock %}
+
+{% block mainContent %} 
+<div class="container">
+    <!-- <div class="graph-placeholder">Gráfico Placeholder</div> -->
+    <h2>Cálculo de Rendimiento</h2>
+    <form method="post" action="{% url 'rendimiento_form' %}">
+        {% csrf_token %}
+        <div class="form-container">
+            <div class="form-group">
+                <label for="isotopo">Isótopo:</label>
+                <input type="text" id="isotopo" name="isotopo" placeholder="Ej. Cobalto-60">
+            </div>
+            <div class="form-group">
+                <label for="energia_salida">Energía Salida:</label>
+                <input type="number" id="energia_salida" name="energia_salida" placeholder="Ej. 1.17 MeV" step="0.01" min="0" max="10">
+            </div>
+            <div class="form-group">
+                <label for="tiempo_irradiacion">Tiempo Irradiación:</label>
+                <input type="number" id="tiempo_irradiacion" name="tiempo_irradiacion" placeholder="Ej. 5 horas">
+            </div>
+            <div class="form-group">
+                <label for="proyectil">Proyectil:</label>
+                <input type="text" id="proyectil" name="proyectil" placeholder="Ej. Neutrones">
+            </div>
+            <div class="form-group">
+                <label for="energia_entrada">Energía Entrada:</label>
+                <input type="number" id="energia_entrada" name="energia_entrada" placeholder="Ej. 2.5 MeV">
+            </div>
+            <div class="form-group">
+                <label for="tiempo_enfriamiento">Tiempo Enfriamiento:</label>
+                <input type="number" id="tiempo_enfriamiento" name="tiempo_enfriamiento" placeholder="Ej. 10 días">
+            </div>
+            <div class="form-group">
+                <label for="corriente">Corriente:</label>
+                <input type="number" id="corriente" name="corriente" placeholder="Ej. 50 μA">
+            </div>
+        </div>
+        <button type="submit" class="submit-button">Calcular</button>
+</div>
+  
+{% endblock %}

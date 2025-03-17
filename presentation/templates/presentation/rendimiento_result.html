@@ -1,0 +1,48 @@
+{% extends 'presentation/assets/main.html' %}
+
+{% block customStyle %} 
+        /* Puedes reutilizar los mismos estilos que en tu formulario */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 2vh;
+            margin: 2vh auto;
+            width: 80%;
+            border-radius: 2vh;
+            box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+        }
+        .graph-container {
+            margin: 2vh 0;
+        }
+{% endblock %}
+
+{% block mainContent %} 
+    <div class="container">
+        <h2>Resultados del Rendimiento</h2>
+        <div class="graph-container">
+            {{ plot_html|safe }}
+        </div>
+        <div class="timer">
+            Tiempo de procesamiento: {{ elapsed_time | floatformat:2 }} segundos
+        </div>
+        <div style="text-align: left; padding: 2vh;">
+            <p><strong>Isótopo:</strong> {{ isotope }}</p>
+            <p><strong>Proyectil:</strong> {{ projectile }}</p>
+            <p><strong>Corriente:</strong> {{ current }} μA</p>
+            <p><strong>Energía deEntrada:</strong> {{ E_in }} eV</p>
+            <p><strong>Energía de Salida:</strong> {{ E_out }} eV</p>
+            <p><strong>Tiempo de Irradiación:</strong> {{ ti }} horas</p>
+            <p><strong>Tiempo de Enfriamiento:</strong> {{ tc }} horas</p>
+            <p><strong>Ratio de Reacción:</strong> {{ rt }} </p>
+             <p><strong>Ratio de Creación:</strong> {{ rti }} </p>
+
+        </div>
+        <a href="{% url 'rendimiento' %}" style="display: block; margin-top: 2vh;">Volver al formulario</a>
+    </div>
+{% endblock %}
