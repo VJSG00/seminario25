@@ -43,8 +43,9 @@ def rendimiento_form(request):
         # Datos
         E_in *=1e6
         E_out *=1e6
+        current *=1e-6
         Bi=1
-	
+
 	    # Esto se tiene que saber por la API
         Z = 52
         lam_I124 = np.log(2)/100.224
