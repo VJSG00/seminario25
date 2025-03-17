@@ -52,7 +52,7 @@ def workflow_no_elastic_data(list_df, E_back, E_beam):
     except(ValueError):
       return None
 
-def workflow(data_dict, E_back, E_beam, I, rho, Z, A):
+def workflow(data_dict, E_back, E_beam, I_beam, rho, Z, A, z_p = 1, S=1):
   """
   Calcula las constantes de producción.
   """
@@ -92,13 +92,8 @@ def workflow(data_dict, E_back, E_beam, I, rho, Z, A):
         list_of_rti_int.append(rti_trap)
 
     # Integral del volumen
-    S = 1 #cm²
     int_vol = trapezoid(y=1 / dEdx, x=E)
     vtar = S*int_vol
-
-    # Constantes de producción
-    I_beam = 60e-6 #microA
-    z_p = 1 # una carga fundamental en el protón
 
     rt_list = []
     rti_list = []

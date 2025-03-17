@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+import plotly.express as px
 import numpy as np
 
 def interpolation_vs_experimental_data(secciones, energias, evaluated_data):
@@ -47,17 +48,34 @@ def grafico_actividad(ti, tp, Ai_dict, Ap_dict):
     
     # Iterate over each reaction and its activity data
     for reaction, (Ai_list, Ap_list) in zip(Ai_dict.keys(), zip(Ai_dict.values(), Ap_dict.values())):
+        i=0
+        colors = px.colors.qualitative.Plotly
         for Ai, Ap in zip(Ai_list, Ap_list):
             # Plot initial activity
-            fig.add_trace(go.Scatter(x=ti, y=Ai, mode='lines', name=f'{reaction}'))
+            fig.add_trace(go.Scatter(x=ti, y=Ai*1e-6, mode='lines', name=f'{reaction}'))
             # Plot post activity
-            fig.add_trace(go.Scatter(x=tp, y=Ap, mode='lines', name=f'{reaction}'))
-    
+            fig.add_trace(go.Scatter(x=tp, y=Ap*1e-6, mode='lines', name=f'{reaction}'))
+            fig.update_traces(line_color=colors[i])
+        i+=1
+
+    fig.update_xaxes(minor=dict(ticklen=3, tickcolor="lightgray", showgrid=True, nticks=3),
+                     minor_ticks="inside",
+                     ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+    fig.update_yaxes(ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+
     # Update plot layout
     fig.update_layout(
         plot_bgcolor="white",
-        xaxis_title='Tiempo',
-        yaxis_title='Actividad',
+        xaxis_title='Tiempo (h)',
+        yaxis_title='Actividad (MBq)',
         title='Actividad vs Tiempo',
         showlegend=True,
         xaxis_showgrid=True,

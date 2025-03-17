@@ -43,11 +43,14 @@ def rendimiento_form(request):
         # Datos
         E_in *=1e6
         E_out *=1e6
+        Bi=1
+	
+	    # Esto se tiene que saber por la API
         Z = 52
         lam_I124 = np.log(2)/100.224
         rho_I124 = 6.237
         A = 124
-        Bi=1
+
 
 
         # Ejecutar funciones: Modulo de calculos.
