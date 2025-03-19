@@ -52,7 +52,7 @@ def workflow_no_elastic_data(list_df, E_back, E_beam):
     except(ValueError):
       return None
 
-def workflow(data_dict, E_back, E_beam, I_beam, rho, Z, A, z_p = 1, S=1.0):
+def workflow(data_dict, E_back, E_beam, I_beam, I, rho, Z, A, z_p = 1, S=1.0):
   """
   Calcula las constantes de producción.
   """
@@ -75,7 +75,7 @@ def workflow(data_dict, E_back, E_beam, I_beam, rho, Z, A, z_p = 1, S=1.0):
       continue
     else:
       print(f"Procesando datos elasticos de la reaccion {reaction}")
-      list_of_sigma_in, dEdx, E = workflow_data(list_df, E_back, E_beam, I_beam, rho, Z, A)
+      list_of_sigma_in, dEdx, E = workflow_data(list_df, E_back, E_beam, I, rho, Z, A)
       if list_of_sigma_in == None:
         continue
 

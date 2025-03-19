@@ -8,6 +8,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # Funciones propias
+from .utils.calculations.api_iaea import get_inestable_isotope, get_stable_isotope
 from .utils.calculations.api import conexion_api
 from .utils.data_cleaning.experimental import procesar_datos
 from .utils.graphs.data import grafico_actividad, interpolation_vs_experimental_data
@@ -32,7 +33,7 @@ def rendimiento_form(request):
         print(f"request.POST: {request.POST}")
 
         # Get variables
-        isotope = request.POST.get('isotopo')
+        isotope = str(request.POST.get('isotopo'))
         projectile = request.POST.get('proyectil')
         current = float(request.POST.get('corriente'))
         E_in = float(request.POST.get('energia_entrada'))
@@ -47,12 +48,20 @@ def rendimiento_form(request):
         Bi=1
 
 	    # Esto se tiene que saber por la API
-        Z = 52
-        lam_I124 = np.log(2)/100.224
-        rho_I124 = 6.237
-        A = 124
+        isotope_parent_data = get_stable_isotope(isotope)
+        Z_p = isotope_parent_data['Z']
+        A_p = isotope_parent_data['A']
+        rho_p = isotope_parent_data['density']
 
+        isotope_daughter_data = get_inestable_isotope(A_p, Z_p)
 
+        Z_d = isotope_daughter_data['Z']
+        Lambda = isotope_daughter_data['Lambda']
+        Lambda = np.log(2)/Lambda
+        #rho_I124 = 6.237
+        #A = 124
+        
+        I = Z_p*(9.76 + 58.8*(Z_p**(-1.19)))
 
         # Ejecutar funciones: Modulo de calculos.
         
@@ -63,11 +72,11 @@ def rendimiento_form(request):
         data_dict = split_by_reaction(evaluated_data)
 
         ## Calcular constantes de producción por reacción
-        rt_dict, rti_dict, E, vtar = workflow(data_dict, E_out, E_in, current, rho_I124, Z, A)
+        rt_dict, rti_dict, E, vtar = workflow(data_dict, E_out, E_in, current, I, rho_p, Z_p, A_p)
 
         ## Solve Differential Equations
-        Ni_dict, Np_dict = numero_nucleos(ti, tp, lam_I124, rho_I124, A, rt_dict, rti_dict, vtar, Bi)
-        Ai_dict, Ap_dict = actividad(lam_I124, Ni_dict, Np_dict)
+        Ni_dict, Np_dict = numero_nucleos(ti, tp, Lambda, rho_p, A_p, rt_dict, rti_dict, vtar, Bi)
+        Ai_dict, Ap_dict = actividad(Lambda, Ni_dict, Np_dict)
 
         plot_html = grafico_actividad(ti, tp, Ai_dict, Ap_dict)
 
@@ -94,3 +103,61 @@ def rendimiento_form(request):
     else:
 
         return redirect(rendimiento)
+    
+def rendimiento_test(request):
+    return render(request, "presentation/rendimiento_test.html", {})
+
+def rendimiento_form_test(request):
+
+    if request.method == "POST":
+        
+        # Medimos el tiempo
+        start_time = time.time()
+
+        print("\nFormulario recibido\n")
+        print(f"request.POST: {request.POST}")
+
+        # Get variables
+        rti = float(request.POST.get('rti'))
+        rt = float(request.POST.get('rt'))
+        Lambda = float(request.POST.get('Lambda'))
+        ti = int(request.POST.get('tiempo_irradiacion'))
+        tp = int(request.POST.get('tiempo_enfriamiento'))
+        rho = float(request.POST.get('densidad'))
+        vtar = float(request.POST.get('volumen'))
+        A = int(request.POST.get('A'))
+        
+
+        # Ajustamos valores
+        rti *= 1e-11
+        rt *= 1e-11
+        Lambda = np.log(2)/Lambda
+        Bi=1
+        rt_dict = {"reaction" : [rt]}
+        rti_dict = {"reaction": [rti]}
+
+        # Calculos
+        Ni_dict, Np_dict = numero_nucleos(ti, tp, Lambda, rho, A, rt_dict, rti_dict, vtar, Bi)
+        Ai_dict, Ap_dict = actividad(Lambda, Ni_dict, Np_dict)
+
+        plot_html = grafico_actividad(ti, tp, Ai_dict, Ap_dict)
+
+        # Tiempo de carga
+        elapsed_time = time.time() - start_time
+
+        # Contexto de resultados
+        context = {
+            'plot_html':plot_html,
+            'rti':rti,
+            'rt':rt,
+            'Lambda':Lambda,
+            'rho':rho,
+            'vtar':vtar,
+            'A':A,
+            'elapsed_time':elapsed_time
+        }
+
+        return render(request, 'presentation/result_test.html', context)
+
+
+    return redirect(rendimiento_test)

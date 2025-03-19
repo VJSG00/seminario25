@@ -1,0 +1,50 @@
+{% extends 'presentation/assets/main.html' %}
+
+{% block customStyle %} 
+    /* Estilos reutilizados para mantener consistencia */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+        text-align: center;
+    }
+    .container {
+        background: white;
+        padding: 2vh;
+        margin: 2vh auto;
+        width: 80%;
+        border-radius: 2vh;
+        box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+    }
+    .graph-container {
+        margin: 2vh 0;
+    }
+    .result-item {
+        text-align: left;
+        padding: 1vh 2vw;
+        font-size: 1.8vh;
+    }
+    .result-item p {
+        margin: 1vh 0;
+    }
+{% endblock %}
+
+{% block mainContent %} 
+<div class="container">
+    <h2>Resultados del Cálculo</h2>
+    <div class="graph-container">
+        {{ plot_html|safe }}
+    </div>
+    <div class="result-item">
+        <p><strong>Tiempo de Irradiación (RTI):</strong> {{ rti }}</p>
+        <p><strong>Tiempo de Enfriamiento (RT):</strong> {{ rt }}</p>
+        <p><strong>Vida Media (Λ):</strong> {{ Lambda }}</p>
+        <p><strong>Densidad (ρ):</strong> {{ rho }}</p>
+        <p><strong>Velocidad (vtar):</strong> {{ vtar }}</p>
+        <p><strong>Área (A):</strong> {{ A }}</p>
+        <p><strong>Tiempo de procesamiento:</strong> {{ elapsed_time|floatformat:2 }} segundos</p>
+    </div>
+    <a href="{% url 'test' %}" style="display: block; margin-top: 2vh;">Volver al formulario</a>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'presentation/assets/main.html' %}
+
+{% block customStyle %} 
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+        text-align: center;
+    }
+    .container {
+        background: white;
+        padding: 2vh;
+        margin: 2vh auto;
+        width: 80%;
+        border-radius: 2vh;
+        box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+    }
+    .form-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2vw;
+        background: #eceff1;
+        padding: 2vh;
+        border-radius: 2vh;
+        box-shadow: 0 0.4vh 0.6vh rgba(0, 0, 0, 0.1);
+        justify-items: center;
+        align-items: center;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #cfd8dc;
+        padding: 1vh;
+        border-radius: 1vh;
+        width: 100%;
+    }
+    label {
+        font-size: 1.8vh;
+        margin-bottom: 1vh;
+    }
+    input {
+        width: 80%;
+        padding: 0.8vh;
+        border: 1px solid #333;
+        border-radius: 1vh;
+        text-align: center;
+    }
+    .submit-button {
+        margin-top: 2vh;
+        padding: 1vh 2vw;
+        font-size: 1.8vh;
+        background: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 1vh;
+        cursor: pointer;
+    }
+{% endblock %}
+
+{% block mainContent %} 
+<div class="container">
+    <h2>Ingresar Valores</h2>
+    <form method="post" action="{% url 'test_result' %}">
+        {% csrf_token %}
+        <div class="form-container">
+            <div class="form-group">
+                <label for="rti">RTI</label>
+                <input type="number" id="rti" name="rti" placeholder="Ingrese RTI" step="0.0001">
+            </div>
+            <div class="form-group">
+                <label for="rt">RT</label>
+                <input type="number" id="rt" name="rt" placeholder="Ingrese RT" step="0.0001">
+            </div>
+            <div class="form-group">
+                <label for="tiempo_irradiacion">Tiempo de Irradiación</label>
+                <input type="number" id="tiempo_irradiacion" name="tiempo_irradiacion" placeholder="En horas" step="1.0">
+            </div>
+            <div class="form-group">
+                <label for="tiempo_enfriamiento">Tiempo de Enfriamiento</label>
+                <input type="number" id="tiempo_enfriamiento" name="tiempo_enfriamiento" placeholder="En horas" step="1.0">
+            </div>
+            <div class="form-group">
+                <label for="Lambda">Vida Media (Λ)</label>
+                <input type="number" id="Lambda" name="Lambda" placeholder="Ingrese vida media en horas" step="0.001">
+            </div>
+            <div class="form-group">
+                <label for="densidad">Densidad (rho)</label>
+                <input type="number" id="densidad" name="densidad" placeholder="Densidad g/cm³" step="0.001">
+            </div>
+            <div class="form-group">
+                <label for="volumen">Volumen del target (vtar)</label>
+                <input type="number" id="volumen" name="volumen" placeholder="Volumen cm³" step="0.001">
+            </div>
+            <div class="form-group">
+                <label for="A">Numero de nucleones (A)</label>
+                <input type="number" id="A" name="A" placeholder="Ej: 124" step="1">
+            </div>
+        </div>
+        <button type="submit" class="submit-button">Calcular</button>
+    </form>
+</div>
+{% endblock %}
