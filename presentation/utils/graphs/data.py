@@ -39,24 +39,131 @@ def interpolation_vs_experimental_data(secciones, energias, evaluated_data):
 
     return plot_html
 
+def grafico_secciones_evaluadas(datos_evaluados):
+    """
+    Args: ti y tp es int, datos_evaluados es una lista de dataframes.
+    """
+
+    
+    fig = go.Figure()
+
+    # Iterar a traves de la lista de dataframes
+    for df in datos_evaluados:
+        
+        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], mode='lines', name=f'{df["reaction"].iloc[0]} {df["library"].iloc[0]}'))
+
+    # Configurar layout
+
+    fig.update_xaxes(minor=dict(ticklen=3, tickcolor="lightgray", showgrid=True, nticks=3),
+                     minor_ticks="inside",
+                     ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,50]
+                     )
+    fig.update_yaxes(ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+
+
+    # Update plot layout
+    fig.update_layout(
+        width=800,
+        height=600,
+        autosize=False,
+        plot_bgcolor="white",
+        xaxis_title='Energía (MeV)',
+        yaxis_title='Sección Eficaz (Barns)',
+        title='Sección Eficaz Evaluada vs Energía',
+        showlegend=True,
+        xaxis_showgrid=True,
+        yaxis_showgrid=True,
+        xaxis_gridcolor='lightgray',
+        yaxis_gridcolor='lightgray',
+        xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+        yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+    )
+
+    # Display the plot
+#    fig.show()
+
+    # # Optional: Export the plot to an HTML file
+    plot_html = fig.to_html(full_html=False)
+
+    return plot_html
+
+
+def grafico_secciones_experimentales(datos_experimentales):
+    """
+    Args: ti y tp es int, datos_evaluados es una lista de dataframes.
+    """
+
+    
+    fig = go.Figure()
+
+    # Iterar a traves de la lista de dataframes
+    for df in datos_experimentales:
+        
+        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], name=f'{df["React"].iloc[0]} {df["author"].iloc[0]}'))
+
+    # Configurar layout
+
+    fig.update_xaxes(minor=dict(ticklen=3, tickcolor="lightgray", showgrid=True, nticks=3),
+                     minor_ticks="inside",
+                     ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,50]
+                     )
+    fig.update_yaxes(ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+
+
+    # Update plot layout
+    fig.update_layout(
+        width=800,
+        height=600,
+        autosize=False,
+        plot_bgcolor="white",
+        xaxis_title='Energía (MeV)',
+        yaxis_title='Sección Eficaz (Barns)',
+        title='Sección Eficaz Experimental vs Energía',
+        showlegend=True,
+        xaxis_showgrid=True,
+        yaxis_showgrid=True,
+        xaxis_gridcolor='lightgray',
+        yaxis_gridcolor='lightgray',
+        xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+        yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+    )
+
+    # Display the plot
+    # fig.show()
+
+    # # Optional: Export the plot to an HTML file
+    plot_html = fig.to_html(full_html=False)
+    return plot_html
+
 def grafico_actividad(ti, tp, Ai_dict, Ap_dict):
     fig = go.Figure()
-    
+
     ti = np.linspace(0, ti, ti * 2)
     tp = np.linspace(0, tp, tp * 2)
     tp = ti.max() + tp
-    
+    t_total = ti.tolist() + tp.tolist()
+
     # Iterate over each reaction and its activity data
-    for reaction, (Ai_list, Ap_list) in zip(Ai_dict.keys(), zip(Ai_dict.values(), Ap_dict.values())):
-        i=0
+    for (ki, vi), (kp, vp) in zip(Ai_dict.items(), Ap_dict.items()):
+
+        Ai = np.array(vi[0].tolist() + vp[0].tolist())
         colors = px.colors.qualitative.Plotly
-        for Ai, Ap in zip(Ai_list, Ap_list):
-            # Plot initial activity
-            fig.add_trace(go.Scatter(x=ti, y=Ai*1e-6, mode='lines', name=f'{reaction}'))
-            # Plot post activity
-            fig.add_trace(go.Scatter(x=tp, y=Ap*1e-6, mode='lines', name=f'{reaction}'))
-            fig.update_traces(line_color=colors[i])
-        i+=1
+
+        fig.add_trace(go.Scatter(x=t_total, y=Ai*1e-6, mode='lines', name=f'{ki}'))
 
     fig.update_xaxes(minor=dict(ticklen=3, tickcolor="lightgray", showgrid=True, nticks=3),
                      minor_ticks="inside",
@@ -71,8 +178,12 @@ def grafico_actividad(ti, tp, Ai_dict, Ap_dict):
                      range=[0,None]
                      )
 
+
     # Update plot layout
     fig.update_layout(
+        width=800,
+        height=600,
+        autosize=False,
         plot_bgcolor="white",
         xaxis_title='Tiempo (h)',
         yaxis_title='Actividad (MBq)',
@@ -82,8 +193,8 @@ def grafico_actividad(ti, tp, Ai_dict, Ap_dict):
         yaxis_showgrid=True,
         xaxis_gridcolor='lightgray',
         yaxis_gridcolor='lightgray',
-        xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),  
-        yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),  
+        xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+        yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
     )
 
     # Optional: Export the plot to an HTML file

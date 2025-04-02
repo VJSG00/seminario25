@@ -6,11 +6,9 @@ def Interpolar_Puntos_Adicionales(energias, secciones, num_puntos_adicionales):
     Aplica el Interpolador de Hermite y linspace para obtener puntos adicionales.
     El objetivo es preparar y comparar los datos para la integración.
     """
-
     hermite_interp = PchipInterpolator(energias, secciones)
     energias_interp = np.linspace(energias.min(), energias.max(), num_puntos_adicionales)
     secciones_interp = hermite_interp(energias_interp)
-
     return energias_interp, secciones_interp
 
 
@@ -32,7 +30,6 @@ def procesar_datos(datos_evaluados):
     e, s = Interpolar_Puntos_Adicionales(df['E,ev'], df['Sig,b'], 1000)
     secciones.append(s)
     energias.append(e)
-
   return secciones, energias
 
 def filtrar_datos_interpolados(energias_interp, secciones_interp, E_back, E_beam):

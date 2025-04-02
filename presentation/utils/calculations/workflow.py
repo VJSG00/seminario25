@@ -59,6 +59,7 @@ def workflow(data_dict, E_back, E_beam, I_beam, I, rho, Z, A, z_p = 1, S=1.0):
 
   rt_dict = {}
   rti_dict = {}
+  rt_all_dict = {}
 
   # Calculo para la no elastica.
   no_elastic_data_list = data_dict['no_elastic_data']
@@ -82,14 +83,20 @@ def workflow(data_dict, E_back, E_beam, I_beam, I, rho, Z, A, z_p = 1, S=1.0):
     # Calculo de la integral de la constante de producción
     list_of_rt_int = []
     list_of_rti_int = []
+    list_of_rti_all_int = []
+    
     for sigma in list_of_sigma_in:
-      rt_int = trapezoid(y=sigma / dEdx, x=E)
+      rti_int = trapezoid(y=sigma / dEdx, x=E)
+      list_of_rti_int.append(rti_int)
+
+    for sigma_non, sigma in zip(list_of_sigma_non, list_of_sigma_in):
+      d_sigma = sigma_non - sigma
+      rt_int = trapezoid(y =d_sigma / dEdx, x =E)
       list_of_rt_int.append(rt_int)
 
-      for sigma_non in list_of_sigma_non:
-        d_sigma = sigma_non - sigma
-        rti_trap = trapezoid(y =d_sigma / dEdx, x =E)
-        list_of_rti_int.append(rti_trap)
+    for sigma_non in list_of_sigma_non:
+      rti_int_prod = trapezoid(y=sigma_non / dEdx, x=E)
+      list_of_rti_all_int.append(rti_int_prod)
 
     # Integral del volumen
     int_vol = trapezoid(y=1 / dEdx, x=E)
@@ -97,8 +104,9 @@ def workflow(data_dict, E_back, E_beam, I_beam, I, rho, Z, A, z_p = 1, S=1.0):
 
     rt_list = []
     rti_list = []
+    rti_all_list = []
 
-    for rt_int, i in zip(list_of_rt_int, range(len(list_of_rt_int))):
+    for rt_int, rti_int, rti_int_non in zip(list_of_rt_int, list_of_rti_int, list_of_rti_all_int):
 
       # Integral de R_T
       rt = (I_beam/(z_p*q_e))*(1/vtar)*rt_int
@@ -106,12 +114,17 @@ def workflow(data_dict, E_back, E_beam, I_beam, I, rho, Z, A, z_p = 1, S=1.0):
       rt_list.append(rt)
 
       # Integral R_{T->i}
-      rti_int = list_of_rti_int[i]
       rti = (I_beam/(z_p*q_e))*(1/vtar)*rti_int
       rti *= 1e-24
       rti_list.append(rti)
 
+      # Integrar R_{Total}
+      rti_non = (I_beam/(z_p*q_e))*(1/vtar)*rti_int_non
+      rti_non *= 1e-24
+      rti_all_list.append(rti_non)
+
     rt_dict[reaction] = rt_list
     rti_dict[reaction] = rti_list
+    rt_all_dict[reaction] = rti_all_list
 
-  return rt_dict, rti_dict, E, vtar
+  return rt_dict, rti_dict, rt_all_dict, E, vtar

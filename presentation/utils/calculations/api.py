@@ -31,6 +31,11 @@ def conexion_datos_experimentales(target, proyectil):
 
   # Almacenamos los dataframes en una lista de dataframes:
   dataframes = []
+  columns_of_interest = ['EN (MEV) 1.1', 'DATA (MB) 0.1', 'DATA-ERR (MB) 0.911', 'Proj', 'Emission', 'Targ1', 'Prod', 'author1', 'year1', 'DatasetID']
+
+  # Testeo - Contadores para filas omitidas
+  omitted_rows_nan = 0
+  omitted_rows_missing_cols = 0
 
   # Busqueda para cada id.
   for e in array:
@@ -42,48 +47,81 @@ def conexion_datos_experimentales(target, proyectil):
     content = response.content.decode('utf-8')
 
     # Filtramos los datos. Solo analizamos datos con error en la seccion eficaz
-    if "DATA-ERR (MB) 0.911" not in content:
-      continue
 
-    else:
-      # Almacenar datos en csv.
-      csv_data = io.StringIO(content)
+    if not all(column in content for column in columns_of_interest):
+      omitted_rows_missing_cols += 1
+      continue  # Omitir si faltan columnas
 
-      # Leer columnas deseadas y almacenar.
-      df = pd.read_csv(csv_data, usecols=['EN (MEV) 1.1', 'DATA (MB) 0.1', 'DATA-ERR (MB) 0.911', 'Proj', 'Emission', 'Targ1', 'Prod', 'author1', 'year1', 'DatasetID'])
-      
-            # Ajustar la reacción y el autor. Despues borrar columnas innecesarias.
-      df['tar'] = df['Targ1'].apply(eliminar_texto_antes_de_guion)
-      df['prod'] = df['Prod'].apply(eliminar_texto_antes_de_guion)
-      df['React'] = df["tar"] + "(" + df['Proj'] + "," + df['Emission'] + ")" + df['prod']
-      df['author'] = df['author1'] + " (" + df['year1'].astype(str) + ")"
-      df.drop(columns=['Proj', 'Targ1', 'Prod', 'author1', 'year1', 'tar', 'prod'], inplace=True)
+    # Almacenar datos en csv.
+    csv_data = io.StringIO(content)
+    # Leer columnas deseadas y almacenar.
+    df = pd.read_csv(csv_data, usecols=['EN (MEV) 1.1', 'DATA (MB) 0.1', 'DATA-ERR (MB) 0.911', 'Proj', 'Emission', 'Targ1', 'Prod', 'author1', 'year1', 'DatasetID'])
+    
+    # 2. Verificar si hay valores NaN en las columnas de interés
+    if df[columns_of_interest].isnull().values.any():
+      omitted_rows_nan += 1
+      continue  # Omitir si hay NaN
 
-      # Ajustar unidades y renombrar columnas
-      df["EN (MEV) 1.1"] = df["EN (MEV) 1.1"]*1e6
-      df["DATA (MB) 0.1"] = df["DATA (MB) 0.1"]*1e-3
-      df["DATA-ERR (MB) 0.911"] = df["DATA-ERR (MB) 0.911"]*1e-3
-      df.rename( columns={
-                "EN (MEV) 1.1" : "E,ev",
-                "DATA (MB) 0.1" : "Sig,b",
-                "DATA-ERR (MB) 0.911" : "dSig",
-                },
-                inplace=True)
-      
-      # Almacenar
-      dataframes.append(df)
+    # Ajustar la reacción y el autor. Despues borrar columnas innecesarias.
+    df['tar'] = df['Targ1'].apply(eliminar_texto_antes_de_guion)
+    df['prod'] = df['Prod'].apply(eliminar_texto_antes_de_guion)
+    df['React'] = df["tar"] + "(" + df['Proj'] + "," + df['Emission'] + ")" + df['prod']
+    df['author'] = df['author1'] + " (" + df['year1'].astype(str) + ")"
+    df.drop(columns=['Proj', 'Targ1', 'Prod', 'author1', 'year1', 'tar', 'prod'], inplace=True)
 
-      # Esto se requiere para los datos evaluados.
-      emissions = []
-      for df in dataframes:
-        emissions.append(df["Emission"][0])
-      emissions = list(np.unique(emissions))
+    # Ajustar unidades y renombrar columnas
+    df["EN (MEV) 1.1"] = df["EN (MEV) 1.1"]*1e6
+    df["DATA (MB) 0.1"] = df["DATA (MB) 0.1"]*1e-3
+    df["DATA-ERR (MB) 0.911"] = df["DATA-ERR (MB) 0.911"]*1e-3
+    df.rename( columns={
+              "EN (MEV) 1.1" : "E,ev",
+              "DATA (MB) 0.1" : "Sig,b",
+              "DATA-ERR (MB) 0.911" : "dSig",
+              },
+              inplace=True
+              )
+    
+    # Almacenar
+    dataframes.append(df)
+
+    # Esto se requiere para los datos evaluados.
+    emissions = []
+    for df in dataframes:
+      emissions.append(df["Emission"][0])
+    emissions = list(np.unique(emissions))
 
   return dataframes, emissions
       ## Testing
       #print(response.url)
 
-def conexion_datos_evaluados(target, projectile, emissions=[]):
+def extraer_dataframe(dic):
+  """
+  Convierte un diccionario obtenido de la API en un DataFrame.
+  Se asegura de que cada punto tenga la clave 'dSig', asignando 0 si falta.
+  """
+  pts_list = dic['datasets'][0]['pts']
+  for point in pts_list:
+      if 'dSig' not in point:
+          point['dSig'] = 0
+
+  d = {
+      'reaction': dic['datasets'][0]['REACTION'],
+      'library': dic['datasets'][0]['LIBRARY'],
+      'E,ev': [],
+      'Sig,b': [],
+      'dSig': []
+  }
+
+  for point in pts_list:
+      d['E,ev'].append(point['E'])
+      d['Sig,b'].append(point['Sig'])
+      d['dSig'].append(point['dSig'])
+
+  df = pd.DataFrame(d)
+  df['reaction'] = df['reaction'].apply(eliminar_sig)  # Se asume que eliminar_sig existe
+  return df
+
+def conexion_datos_evaluados(target, projectile, emissions=[], libs_to_check = ['IAEA', 'JENDL']):
   """
   Extrae los datos de ENDF y devuelve archivos csv o dataframes segun sea solicitado.
   """
@@ -125,51 +163,55 @@ def conexion_datos_evaluados(target, projectile, emissions=[]):
 
   # Iteramos simultáneamente por lib_names y data_ids
   for lib_name, data_id in zip(lib_names, data_ids):
-      # Verificamos si 'JENDL' o 'IAEA' se encuentran en el nombre de la librería
-      if 'JENDL' in lib_name or 'IAEA' in lib_name:
-          selected_ids.append(data_id)
+        if any(lib in lib_name for lib in libs_to_check):
+            selected_ids.append(data_id)
 
-  # Se extraen y se almacenan los datos.
-  to_dataframe = []
-  for id in selected_ids:
-    url = 'https://nds.iaea.org/exfor/e4sig?&json'
-    args = {'SectID':id}
-    response = requests.get(url, params=args)
-
-    # Convertir respuesta json en un diccionario.
-    dic = response.json()
-
-    # Almacenamos en formato diccionario.
-    to_dataframe.append(dic)
-
-  # Es necesario completar los datos: dSig
-  for dic in to_dataframe:
-      pts_list = dic['datasets'][0]['pts']
-      for point in pts_list:
-          if 'dSig' not in point:
-              point['dSig'] = 0
-
-  # Extraemos info para crear dataframes
+######################################
+# Obtenemos una lista de dataframes #
+######################################  
   list_df = []
-  for dic in to_dataframe:
+  for sid in selected_ids:
+    url_datos = 'https://nds.iaea.org/exfor/e4sig?&json'
+    args = {'SectID': sid}
+    response = requests.get(url_datos, params=args)
+    dic = response.json()
+    list_df.append(extraer_dataframe(dic))
+  
+  # Verificar si hay una reacción NON en IAEA o JENDL
+  found_non_reaction = any('NON' in df['reaction'].iloc[0] for df in list_df)
+  if found_non_reaction:
+    return list_df  # Se retorna directamente sin buscar en TENDL
 
-    d = {
-        'reaction' : dic['datasets'][0]['REACTION'],
-        'library': dic['datasets'][0]['LIBRARY'],
-        'E,ev' : [],
-        'Sig,b' : [],
-        'dSig' : []
-    }
+######################################
+# Busqueda en TENDL #
+######################################   
+  print("No se encontró una reacción con 'NON' en IAEA o JENDL. Buscando en TENDL...")
+  tendl_ids = [data_id for lib_name, data_id in zip(lib_names, data_ids) if 'TENDL' in lib_name]
 
-    for point in dic['datasets'][0]['pts']:
-      d['E,ev'].append(point['E'])
-      d['Sig,b'].append(point['Sig'])
-      d['dSig'].append(point['dSig'])
+  tendl_dfs = []
+  for tid in tendl_ids:
+      url_datos = 'https://nds.iaea.org/exfor/e4sig?&json'
+      args = {'SectID': tid}
+      response = requests.get(url_datos, params=args)
+      dic = response.json()
+      tendl_dfs.append(extraer_dataframe(dic))
 
-    # Almacenamos en df
-    df = pd.DataFrame(d)
-    df['reaction'] = df['reaction'].apply(eliminar_sig)
-    list_df.append(df)
+  # Filtrar dataframes de TENDL que cumplan con las condiciones
+  valid_tendl_dfs = []
+  for df in tendl_dfs:
+      zero_count = (df['Sig,b'] == 0).sum()
+      if zero_count <= 1:  # Máximo un valor en cero
+          valid_tendl_dfs.append(df)
+
+  if not valid_tendl_dfs:
+      print("No se encontró ningún conjunto de TENDL válido según las condiciones.")
+      return list_df  # Solo se retorna IAEA/JENDL
+
+  # Seleccionar el mejor conjunto de datos de TENDL con valores más grandes de Sig,b
+  best_tendl_df = max(valid_tendl_dfs, key=lambda df: df['Sig,b'].mean())
+
+  # Agregar el mejor conjunto de TENDL a list_df
+  list_df.append(best_tendl_df)
 
   return list_df
 

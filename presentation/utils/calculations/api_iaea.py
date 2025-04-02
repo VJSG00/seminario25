@@ -17,11 +17,12 @@ def get_isotope_data(nuclide):
     """
     url = "https://nds.iaea.org/relnsd/v1/data"
     rad_types = ["e", "a", "bp", "bm", "g", "x"]
+    headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:77.0) Gecko/20100101 Firefox/77.0'}
 
     response_list = []
     for rad in rad_types:
         args = {"fields": "decay_rads", "nuclides": nuclide, "rad_types": rad}
-        r = requests.get(url, params=args)
+        r = requests.get(url, params=args, headers=headers)
         response_list.append(r)
 
     content_list = []
