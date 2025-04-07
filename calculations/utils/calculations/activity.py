@@ -1,0 +1,74 @@
+import numpy as np
+import copy
+
+# Función de irradiación
+def numero_nucleos_y_actividad(datos_productos: dict, products: list, A:int ,ti:int, tp:int, rho:float, vtar:float , Bi:float):
+
+  data_output = copy.deepcopy(datos_productos)
+  #print("\nDatos dentro de numero nucleos y actividad\n", data_output )
+
+  # constantes
+  na = 6.022e23 # numero de avogadro, entidades/mol
+
+  # tiempo de irradiación y post-irradiación
+  ti = np.linspace(0, ti, ti*2) #[horas]
+  tp = np.linspace(0, tp, tp*2) #[horas]
+
+  # numero inicial de nucleos en el target.
+  nt_0 = (na/A)*Bi*rho*vtar
+
+  # Iterar sobre cada isotopo producido
+  for product in products:
+    
+    # Iterar sobre cada conjunto de datos.
+    for data in data_output[product]:
+      half_life = (data['final_isotope'].lambda_value)/3600 #horas⁻¹
+      Lambda = np.log(2)/half_life #[horas⁻¹]
+      rti = data['rti']
+      rti *= 3600 #[horas⁻¹]
+
+      # Hay n rt's en rt_list. Hacemos los calculos con todos.
+      for index in range(len(data['rt_list'])):
+        rt = data['rt_list'][index]['rt']
+        rt *= 3600  #[horas⁻¹]
+        library = data['rt_list'][index]['library']
+
+        ### TODO: Todo esto es primer orden.
+        # Factor de creación - primer orden.
+        creation_term = nt_0*(rti/ (Lambda - rt))
+        print("\n", creation_term, rt, Lambda, rti)
+
+        # Nucleos de i en el tiempo de creación - primer orden.
+        Ni = creation_term * (np.exp(-rt * ti)  -np.exp(-Lambda * ti))
+        
+        # Nucleos de i en el tiempo de enfriamiento.
+        Ni_max = Ni.max()
+
+        Np = Ni_max*np.exp(-Lambda*tp)
+        # Calculo de la actividad
+        Ai = (Lambda/3600) * Ni    # 1/seg
+        Ap = (Lambda/3600) * Np
+
+        # Almacenar
+        N_dict = {
+            'library': library,
+            'Ni': Ni,
+            'Np': Np,
+        }
+
+        #print(Ai, Ap, "\n")
+        A_dict = {
+            'library': library,
+            'Ai': Ai,
+            'Ap': Ap,
+        }
+
+        if 'N_list' not in data:
+          data['N_list'] = []
+        data['N_list'].append(N_dict)
+
+        if 'A_list' not in data:
+          data['A_list'] = []
+        data['A_list'].append(A_dict)
+
+  return data_output

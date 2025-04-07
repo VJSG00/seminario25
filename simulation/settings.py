@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'presentation',
+    'calculations'
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'reactions': {
+        # Base de datos para las reacciones nucleares
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'reactions_data.db',
+    },
+    'nuclear_properties': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'nuclear_properties.db',
     }
 }
 
@@ -117,6 +127,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    #BASE_DIR / "static",
+    "calculations/static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

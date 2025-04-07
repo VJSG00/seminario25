@@ -1,0 +1,194 @@
+{% extends 'calculations/assets/main.html' %}
+
+{% block customStyle %} 
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+        text-align: center;
+    }
+    .container {
+        background: white;
+        padding: 2vh;
+        margin: 2vh auto;
+        width: 80%;
+        border-radius: 2vh;
+        border: 1px solid  #1e3c72;
+        box-shadow: 20px 20px 60px #d9d9d9, -20px -20px 60px #ffffff;
+    }
+    
+
+    .graph-placeholder {
+        width: 100%;
+        height: 40vh;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2vh;
+        color: #555;
+        margin-bottom: 3vh;
+    }
+    .form-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2vw;
+        {% comment %} background: #eceff1; {% endcomment %}
+        padding: 2vh;
+        border-radius: 2vh;
+        box-shadow: 0 0.4vh 0.6vh rgba(0, 0, 0, 0.1);
+    }
+
+
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        {% comment %} justify-content: space-between; {% endcomment %}
+        background: #cfd8dc;
+        padding: 1vh;
+        border-radius: 1vh;
+    }
+    {% comment %} label {
+        font-size: 1.8vh;
+        margin-right: 1vw;
+    } {% endcomment %}
+
+    .submit-button {
+        margin-top: 2vh;
+        padding: 1vh 2vw;
+        font-size: 1.8vh;
+        background: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 1vh;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    /* Botón neumórfico */
+    .btn-neu {
+        color: #090909;
+        padding: 0.7em 1.7em;
+        font-size: 18px;
+        border-radius: 0.5em;
+        background: transparent;
+        cursor: pointer;
+        border: 1px solid #e8e8e8;
+        transition: all 0.3s;
+        box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+    }
+    button:hover {
+        border: 1px solid  #1e3c72;
+    }
+    .btn-neu:active {
+        color: #666;
+        box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+    }
+
+    /* Campo de texto flotante */
+    .input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        position: relative;
+        color: white;
+    }
+    .input {
+        width: 200px;
+        height: 45px;
+        border: none;
+        outline: none;
+        padding: 0 7px;
+        border-radius: 6px;
+        color: black;
+        font-size: 15px;
+        background-color: white;
+        box-shadow:
+                20px 20px 60px #d9d9d9,
+                -20px -20px 60px #ffffff;
+    }
+    .input:focus,
+    .input:valid {
+        box-shadow:
+            3px 3px 10px rgba(0,0,0,1),
+            -1px -1px 6px rgba(255, 255, 255, 0.4),
+            inset 3px 3px 10px rgba(0,0,0,1),
+            inset -1px -1px 6px rgba(255, 255, 255, 0.4);
+    }
+    .label {
+        position: absolute;
+        top: 2vh;
+        left: 1vh;
+        font-size: 15px;
+        color: black;
+        pointer-events: none;
+        transition: 0.3s;
+    }
+    .container .input:valid ~ .label,
+    .container .input:focus ~ .label {
+    transition: 0.3s;
+    padding-left: 2px;
+    transform: translateY(-35px);
+    }
+{% endblock %}
+
+{% block mainContent %}
+<div class="container">
+    <h2 class="title">Cálculo de Rendimiento</h2>
+    <form method="post" action="{% url 'rendimiento_seleccionar' %}">
+        {% csrf_token %}
+        <div class="form-container">
+
+            <div class="input-container">
+                {% comment %} <label for="isotopo">Isótopo:</label> {% endcomment %}
+                <input type="text" id="isotopo" name="isotopo" class="input" required>
+                <label for="isotopo" class="label">Isótopo:</label>
+
+            </div>
+
+            <div class="form-group">
+                <label for="energia_salida">Energía Salida:</label>
+                <input type="number" id="energia_salida" name="energia_salida" class="input" placeholder="Ej. 1.17 MeV" step="0.01" min="0" max="100" required>
+                <label for="energia_salida" class="label">Energía Salida:</label>
+            </div>
+
+            <div class="form-group">
+                <label for="tiempo_irradiacion">Tiempo Irradiación:</label>
+                <input type="number" id="tiempo_irradiacion" name="tiempo_irradiacion" class="input"  required>
+                <label for="tiempo_irradiacion" class="label">Tiempo Irradiación:</label>
+            </div>
+
+            <div class="form-group">
+                <label for="proyectil">Proyectil:</label>
+                <input type="text" id="proyectil" name="proyectil" class="input" placeholder="Ej. Neutrones" required>
+                <label for="proyectil" class="label">Proyectil:</label>
+            </div>
+
+            <div class="form-group">
+                <label for="energia_entrada">Energía Entrada:</label>
+                <input type="number" id="energia_entrada" name="energia_entrada" class="input" placeholder="Ej. 2.5 MeV" required>
+                <label for="energia_entrada" class="label">Energía Entrada:</label>
+            </div>
+
+            <div class="form-group">
+                <label for="tiempo_enfriamiento">Tiempo Enfriamiento:</label>
+                <input type="number" id="tiempo_enfriamiento" name="tiempo_enfriamiento" class="input" placeholder="Ej. 10 días" required>
+                <label for="tiempo_enfriamiento" class="label">Tiempo Enfriamiento:</label>
+            </div>
+
+            <div class="form-group">
+                <label for="corriente">Corriente:</label>
+                <input type="number" id="corriente" name="corriente" class="input" placeholder="Ej. 50 μA" required>
+                <label for="corriente" class="label">Corriente:</label>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn-neu submit-button">
+            Calcular
+        </button>
+    </form>
+</div>
+{% endblock %}

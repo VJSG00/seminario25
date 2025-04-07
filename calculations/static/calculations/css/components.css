@@ -1,0 +1,59 @@
+/* Botón neumórfico */
+.btn-neu {
+  color: #090909;
+  padding: 0.7em 1.7em;
+  font-size: 18px;
+  border-radius: 0.5em;
+  background: #e8e8e8;
+  cursor: pointer;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+}
+.btn-neu:active {
+  color: #666;
+  box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+}
+
+/* Campo de texto flotante */
+/* From Uiverse.io by AmIt-DasIT */
+.input-container {
+  position: relative;
+  margin: 1em 0;
+}
+.input {
+  width: 200px;
+  height: 45px;
+  border: none;
+  outline: none;
+  padding: 0 7px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 15px;
+  background-color: transparent;
+  box-shadow:
+    3px 3px 10px rgba(0,0,0,1),
+    -1px -1px 6px rgba(255, 255, 255, 0.4);
+}
+.input:focus,
+.input:valid {
+  box-shadow:
+    3px 3px 10px rgba(0,0,0,1),
+    -1px -1px 6px rgba(255, 255, 255, 0.4),
+    inset 3px 3px 10px rgba(0,0,0,1),
+    inset -1px -1px 6px rgba(255, 255, 255, 0.4);
+}
+.label {
+  position: absolute;
+  top: 13px;
+  left: 10px;
+  font-size: 15px;
+  color: white;
+  pointer-events: none;
+  transition: 0.3s;
+}
+.input:focus + .label,
+.input:valid + .label {
+  transform: translateY(-35px);
+  padding-left: 2px;
+}

@@ -1,0 +1,206 @@
+import plotly.graph_objects as go
+import plotly.express as px
+import numpy as np
+
+def interpolation_vs_experimental_data(secciones, energias, evaluated_data):
+    """
+    Grafica datos experimentales e interpolados.
+    El objetivo es que se puedan comparar.
+    """
+  
+
+    fig = go.Figure()
+
+    max_energies = []
+
+    # Graficar interpolaciones
+    for i in range(len(energias)):
+        max_energies.append(energias[i].max())
+        fig.add_trace(go.Scatter(x=energias[i], y=secciones[i], mode='lines', name=f'DataFrame {i+1}'))
+
+    # Graficar datos experimentales
+    for df in evaluated_data:
+        if len(df) > 100:
+            fig.add_trace(go.Scatter(x=df['E,ev'], y=df['Sig,b'], mode='lines', line=dict(color='blue', width=1, backoff=0.1)))
+        else:
+            fig.add_trace(go.Scatter(x=df['E,ev'], y=df['Sig,b'], mode='markers', marker=dict(color='blue', opacity=0.2)))
+
+    # Configurar ejes y leyenda
+    fig.update_layout(
+        xaxis=dict(range=[0, np.min(max_energies)]),
+        xaxis_title='Energía (MeV)',
+        yaxis_title='Sección Eficaz (barns)',
+        title='Datos experimentales vs Interpolación cúbica de Hermite',
+        showlegend=True,
+        #grid=True
+    )
+
+    plot_html = fig.to_html(full_html=False )
+
+    return plot_html
+
+def grafico_secciones_evaluadas(datos_evaluados):
+    """
+    Args: ti y tp es int, datos_evaluados es una lista de dataframes.
+    """
+
+    
+    fig = go.Figure()
+
+    # Iterar a traves de la lista de dataframes
+    for df in datos_evaluados:
+        
+        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], mode='lines', name=f'{df["reaction"].iloc[0]} {df["library"].iloc[0]}'))
+
+    # Configurar layout
+
+    fig.update_xaxes(minor=dict(ticklen=3, tickcolor="lightgray", showgrid=True, nticks=3),
+                     minor_ticks="inside",
+                     ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,50]
+                     )
+    fig.update_yaxes(ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+
+
+    # Update plot layout
+    fig.update_layout(
+        width=800,
+        height=600,
+        autosize=False,
+        plot_bgcolor="white",
+        xaxis_title='Energía (MeV)',
+        yaxis_title='Sección Eficaz (Barns)',
+        title='Sección Eficaz Evaluada vs Energía',
+        showlegend=True,
+        xaxis_showgrid=True,
+        yaxis_showgrid=True,
+        xaxis_gridcolor='lightgray',
+        yaxis_gridcolor='lightgray',
+        xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+        yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+    )
+
+    # Display the plot
+#    fig.show()
+
+    # # Optional: Export the plot to an HTML file
+    plot_html = fig.to_html(full_html=False)
+
+    return plot_html
+
+
+def grafico_secciones_experimentales(datos_experimentales):
+    """
+    Args: ti y tp es int, datos_evaluados es una lista de dataframes.
+    """
+
+    
+    fig = go.Figure()
+
+    # Iterar a traves de la lista de dataframes
+    for df in datos_experimentales:
+        
+        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], name=f'{df["React"].iloc[0]} {df["author"].iloc[0]}'))
+
+    # Configurar layout
+
+    fig.update_xaxes(minor=dict(ticklen=3, tickcolor="lightgray", showgrid=True, nticks=3),
+                     minor_ticks="inside",
+                     ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,50]
+                     )
+    fig.update_yaxes(ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+
+
+    # Update plot layout
+    fig.update_layout(
+        width=800,
+        height=600,
+        autosize=False,
+        plot_bgcolor="white",
+        xaxis_title='Energía (MeV)',
+        yaxis_title='Sección Eficaz (Barns)',
+        title='Sección Eficaz Experimental vs Energía',
+        showlegend=True,
+        xaxis_showgrid=True,
+        yaxis_showgrid=True,
+        xaxis_gridcolor='lightgray',
+        yaxis_gridcolor='lightgray',
+        xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+        yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+    )
+
+    # Display the plot
+    # fig.show()
+
+    # # Optional: Export the plot to an HTML file
+    plot_html = fig.to_html(full_html=False)
+    return plot_html
+
+def grafico_actividad(ti, tp, datos_finales, productos):
+    fig = go.Figure()
+
+    ti = np.linspace(0, ti, ti * 2)
+    tp = np.linspace(0, tp, tp * 2)
+    tp = ti.max() + tp
+    t_total = ti.tolist() + tp.tolist()
+
+    for producto in productos:
+
+        for data in datos_finales[producto]:
+            
+            for datos_actividad in data['A_list']:
+                
+                A = np.array(datos_actividad['Ai'].tolist() + datos_actividad['Ap'].tolist())
+
+                fig.add_trace(go.Scatter(x=t_total, y=A*1e-6, mode='lines', name=f'{producto}: {datos_actividad["library"]}'))
+
+
+    fig.update_xaxes(minor=dict(ticklen=3, tickcolor="lightgray", showgrid=True, nticks=3),
+                     minor_ticks="inside",
+                     ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+    fig.update_yaxes(ticks="inside",
+                     ticklabelstep=1,
+                     mirror=True,
+                     range=[0,None]
+                     )
+
+
+    # Update plot layout
+    fig.update_layout(
+        width=800,
+        height=600,
+        autosize=False,
+        plot_bgcolor="white",
+        xaxis_title='Tiempo (h)',
+        yaxis_title='Actividad (MBq)',
+        title='Actividad vs Tiempo',
+        showlegend=True,
+        xaxis_showgrid=True,
+        yaxis_showgrid=True,
+        xaxis_gridcolor='lightgray',
+        yaxis_gridcolor='lightgray',
+        xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+        yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
+    )
+
+    # Optional: Export the plot to an HTML file
+    plot_html = fig.to_html(full_html=False)
+
+    return plot_html

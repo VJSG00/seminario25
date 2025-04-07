@@ -1,0 +1,12 @@
+{# templates/components/text_input.html #}
+<div class="input-container">
+  <input
+    id="{{ id }}"
+    name="{{ name }}"
+    type="{{ input_type|default:'text' }}"
+    class="input"
+    value="{{ value|default:'' }}"
+    required="{{ required|default:False }}"
+  />
+  <label for="{{ id }}" class="label">{{ label }}</label>
+</div>

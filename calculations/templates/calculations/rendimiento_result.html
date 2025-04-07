@@ -1,4 +1,4 @@
-{% extends 'presentation/assets/main.html' %}
+{% extends 'calculations/assets/main.html' %}
 
 {% block customStyle %} 
         /* Puedes reutilizar los mismos estilos que en tu formulario */
@@ -39,9 +39,6 @@
             <p><strong>Energía de Salida:</strong> {{ E_out }} eV</p>
             <p><strong>Tiempo de Irradiación:</strong> {{ ti }} horas</p>
             <p><strong>Tiempo de Enfriamiento:</strong> {{ tc }} horas</p>
-            <p><strong>Ratio de producción total:</strong> {{ rt_all }} </p>
-             <p><strong>Ratio de Creación:</strong> {{ rti }} </p>
-
         </div>
         <a href="{% url 'rendimiento' %}" style="display: block; margin-top: 2vh;">Volver al formulario</a>
     </div>

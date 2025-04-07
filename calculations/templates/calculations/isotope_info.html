@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Información del Isótopo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #fdfdfd;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        .result {
+            padding: 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            max-width: 400px;
+        }
+        label, input {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #007BFF;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Consulta Información de Isótopo</h1>
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            <label for="isotopo">Ingresa el símbolo del isótopo:</label>
+            <input type="text" id="isotopo" name="isotopo" placeholder="Ej: H-1" required>
+            <button type="submit">Consultar</button>
+        </form>
+    </div>
+    {% if result %}
+    <div class="result">
+        {% if result == "No se encontró el isótopo." %}
+            <p>{{ result }}</p>
+        {% else %}
+            <p><strong>Símbolo:</strong> {{ result.symbol }}</p>
+            <p><strong>Es estable:</strong> {{ result.is_stable }}</p>
+            <p><strong>Lambda Value:</strong> {{ result.lambda_value }}</p>
+            <p><strong>A:</strong> {{ result.A }}</p>
+            <p><strong>Z:</strong> {{ result.Z }}</p>
+            <p><strong>N:</strong> {{ result.N }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</body>
+</html>
