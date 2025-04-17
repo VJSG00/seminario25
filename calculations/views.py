@@ -26,32 +26,10 @@ from calculations.utils.graphs.evaluated import grafico_secciones_evaluadas
 from calculations.utils.graphs.experimental import grafico_secciones_experimentales
 
 
-# def isotope_info_view(request):
-#     result = None
-#     if request.method == 'POST':
-#         isotopo = request.POST.get('isotopo')
-#         print(f"\n{isotopo}\n")
-#         # Consultamos la base de datos "reactions"
-#         try:
-#             isotope = Isotope.objects.using('nuclear_properties').get(symbol=isotopo)
-#             result = {
-#                 'symbol': isotope.symbol,
-#                 'is_stable': isotope.is_stable,
-#                 'lambda_value': isotope.lambda_value,
-#                 'A': isotope.A,
-#                 'Z': isotope.Z,
-#                 'N': isotope.N,
-#             }
-#         except Isotope.DoesNotExist:
-#             result = "No se encontró el isótopo."
-#     return render(request, 'calculations/isotope_info.html', {'result': result})
+def rendimiento_ingresar_datos(request):
+    return render(request, "calculations/rendimiento_ingresar_datos.html", {})
 
-    
-
-def rendimiento_datos_form(request):
-    return render(request, "calculations/rendimiento_seleccionar_datos.html", {})
-
-def rendimiento_seleccionar_datos(request):
+def rendimiento_filtrar_datos(request):
     
     start_time = time.time()
 
@@ -116,27 +94,28 @@ def rendimiento_seleccionar_datos(request):
             "I": I,
             "Bi": Bi,
             "datos_evaluados": datos_evaluados,
-            "datos_experimentales": datos_experimentales,
+            #"datos_experimentales": datos_experimentales,
         }, timeout=1800)  # 30 minutos
 
         # Graficos
-        experimental_plot = grafico_secciones_experimentales(datos_experimentales)
+        #experimental_plot = grafico_secciones_experimentales(datos_experimentales)
         evaluated_plot = grafico_secciones_evaluadas(datos_evaluados)
 
         experimental_author = list(data["author"] for data in datos_experimentales)
         evaluated_library = list(data["reference"] for data in datos_evaluados)
 
         context = {
-		"experimental_plot":experimental_plot,
+		#"experimental_plot":experimental_plot,
         "evaluated_plot": evaluated_plot,
 	    "experimental_author":experimental_author,
         "evaluated_library": evaluated_library,
         "cache_key": cache_key,
         }
 
-        return render(request, "calculations/rendimiento_datos.html", context)
+#        return render(request, "calculations/rendimiento_filtrar_datos.html", context)
+        return render(request, "calculations/filtrar_nuevo.html", context)
 
-def rendimiento_mostrar_datos(request):
+def rendimiento_mostrar_resultados(request):
     if request.method == "POST":
        
         start_time = time.time()
@@ -163,7 +142,7 @@ def rendimiento_mostrar_datos(request):
         rho_p = data["rho_p"]
         I = data["I"]
         Bi = data["Bi"]
-        experimental_data = data["datos_experimentales"]
+        #experimental_data = data["datos_experimentales"]
         datos_evaluados = data["datos_evaluados"]
 
         #Establecemos 
@@ -178,15 +157,16 @@ def rendimiento_mostrar_datos(request):
         # print("No se ha seleccionado datos experimentales")
 
         ### Datos seleccionados ###
-        #evaluados_seleccionados = request.POST.getlist("selected_evaluated")
-        #evaluados_seleccionados = [int(i) for i in evaluados_seleccionados]
+        evaluados_seleccionados = request.POST.getlist("selected_evaluated")
+        print(evaluados_seleccionados)
+        evaluados_seleccionados = [int(i) for i in evaluados_seleccionados]
 
-        #datos_seleccionados = [evaluated_data[i] for i in evaluados_seleccionados]
+        datos_seleccionados = [datos_evaluados[i] for i in evaluados_seleccionados]
         ################################################################################
         # Consultar datos de los hijos a la API
         
         products = []
-        for data in datos_evaluados:
+        for data in datos_seleccionados:
             products.append(data["product"])
 
         products = np.unique(products).tolist()
@@ -204,13 +184,13 @@ def rendimiento_mostrar_datos(request):
             isotopes.append(isotope)
 
         for isotope in isotopes:
-            for data in datos_evaluados:
+            for data in datos_seleccionados:
                 if data['product'] == isotope.symbol:
                     data['final_isotope'] = isotope
 
         ################################################################################
         # Procesamos los datos extraidos de la BD
-        datos_procesados = procesar_datos(datos_evaluados)
+        datos_procesados = procesar_datos(datos_seleccionados)
 
         datos_interpolados = interpolar_datos(datos_procesados, num_puntos_adicionales=500 )
 
@@ -242,7 +222,7 @@ def rendimiento_mostrar_datos(request):
         ################################################################################
         # integrales
         datos_con_ratios = integral_ratios(datos_divididos, vtar, z_p, current, dEdx, E)
-        print(datos_con_ratios['I124'][0]['rti'])
+        #print(datos_con_ratios['I124'][0]['rti'])
 
         ################################################################################
         # Ecuaciones diferenciales para la actividad:
@@ -268,9 +248,9 @@ def rendimiento_mostrar_datos(request):
             'elapsed_time': elapsed_time
         }
 
-        return render(request, 'calculations/rendimiento_result.html', context)
+        return render(request, 'calculations/rendimiento_resultado.html', context)
 
     else:
 
-        return redirect(rendimiento_datos_form)
+        return redirect(rendimiento_ingresar_datos)
     

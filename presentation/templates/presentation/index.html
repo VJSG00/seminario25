@@ -1,60 +1,76 @@
 {% extends 'presentation/assets/main.html' %}
-        
-{% block customStyle %} 	
-	body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            background: white;
-            padding-top: 8vh;
-            padding-bottom: 8vh;
-            margin: auto;
-            width: 75%;
-            border-radius: 2vh;
-            box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
-        }
-        .options {
-            display: flex;
-            justify-content: center;
-            gap: 2vw;
-            margin-top: 4vh;
-        }
-        .option {
-            background: #2a5298;
-            padding: 4vh;
-            border-radius: 1vh;
-            width: 25vw;
-            box-shadow: 0 0.5vh 0.8vh rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            text-decoration: none;
-            color: white;
-            transition: background 0.3s ease;
-        }
-        .option:hover {
-            background: #1e3c72;
-        }
+
+{% block customStyle %}   
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100vh;
+    }
+    .container {
+        background: white;
+        padding-top: 8vh;
+        padding-bottom: 8vh;
+        margin: auto;
+        width: 75%;
+        border-radius: 2vh;
+        box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+    }
+    .options {
+        display: flex;
+        justify-content: center;
+        gap: 2vw;
+        margin-top: 4vh;
+    }
+    .option {
+        background: #2a5298;
+        padding: 4vh;
+        border-radius: 1vh;
+        width: 25vw;
+        box-shadow: 0 0.5vh 0.8vh rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        color: white;
+        transition: background 0.3s ease;
+        border: none;
+        display: inline-block;
+    }
+    .option:hover {
+        background: #1e3c72;
+    }
+    /* Estilos para simular encabezado y párrafo */
+    .option .button-heading {
+      display: block;
+      font-size: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    .option .button-subheading {
+      display: block;
+      font-size: 1em;
+      margin: 0;
+    }
 {% endblock %}
 
 {% block mainContent %} 
 <div class="container">
     <h2>Seleccione un modo</h2>
     <div class="options">
-        <a href="/rendimiento" class="option">
-            <h3>Determinar el rendimiento</h3>
-            <p>Dado la muestra y la energía, calcular el rendimiento.</p>
-        </a>
-        <a href="/isotopo" class="option">
-            <h3>Determinar el elemento</h3>
-            <p>Dado un rendimiento deseado, calcular elementos y energías.</p>
-        </a>
+        <button type="button" class="option"
+                onclick="window.location.href='{% url 'rendimiento_ingresar' %}'">
+            <span class="button-heading">Base de Datos</span>
+            <span class="button-subheading">Rápido. Datos IAEA, EXFOR y ENDF del 2025.</span>
+        </button>
+        <button type="button" class="option"
+                {% comment %} onclick="window.location.href='{% url 'rendimiento_ingresar' %}'"  {% endcomment %}
+                disable>
+            <span class="button-heading"> (En mantenimiento)</span>
+            <span class="button-heading"> API IAEA + ENDF + EXFOR</span>
+            <span class="button-subheading">Datos Actualizados. Puede tardar minutos.</span>
+        </button>
     </div>
 </div>
 {% endblock %}

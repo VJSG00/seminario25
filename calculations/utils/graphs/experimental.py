@@ -34,7 +34,7 @@ def grafico_secciones_experimentales(datos_experimentales: list):
     # Update plot layout
     fig.update_layout(
         width=800,
-        height=600,
+        height=500,
         autosize=False,
         plot_bgcolor="white",
         xaxis_title='Energía (MeV)',

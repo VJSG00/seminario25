@@ -16,19 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from calculations.views import rendimiento_datos_form, rendimiento_mostrar_datos, rendimiento_seleccionar_datos
-from presentation.views import index, rendimiento, rendimiento_form, rendimiento_test, rendimiento_form_test
+from calculations.views import rendimiento_ingresar_datos, rendimiento_filtrar_datos, rendimiento_mostrar_resultados
+from presentation.views import index
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index, name="home"),
-    path('rendimiento/', rendimiento, name="rendimiento"),
-    path('rendimiento/form/', rendimiento_form, name="rendimiento_form" ),
-    path('rendimiento/test/', rendimiento_test, name="test"),
-    path('rendimiento/test/resultado', rendimiento_form_test, name="test_result"),
-    path('rendimiento/datos/', rendimiento_datos_form, name="rendimiento_seleccionar_datos"),
-    path('rendimiento/datos/seleccionar', rendimiento_seleccionar_datos, name="rendimiento_seleccionar"),
-    path('rendimiento/datos/resultado', rendimiento_mostrar_datos, name="rendimiento_resultado"),
+    path('rendimiento/', rendimiento_ingresar_datos, name="rendimiento_ingresar"),
+    path('rendimiento/seleccionar', rendimiento_filtrar_datos, name="rendimiento_filtrar"),
+    path('rendimiento/resultado', rendimiento_mostrar_resultados, name="rendimiento_resultado"),
     #path('calculations/', name="calculations_test"),
+#    path('rendimiento/form/', rendimiento_form, name="rendimiento_form" ),
+#    path('rendimiento/test/', rendimiento_test, name="test"),
+#    path('rendimiento/test/resultado', rendimiento_form_test, name="test_result"),
+#    path('rendimiento/datos/', rendimiento_datos_form, name="rendimiento_seleccionar_datos"),
+
 ]

@@ -20,7 +20,6 @@ from presentation.utils.calculations.diferential_equation import actividad, nume
 
 # Create your views here.
 def index(request):
-    #return HttpResponse("Hello, world. You're at the polls index.")
     return render(request, "presentation/index.html", {})
 
 def rendimiento(request):
