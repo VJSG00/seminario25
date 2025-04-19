@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.core.cache import cache
 
 # Otros paquetes
@@ -8,6 +9,7 @@ from collections import defaultdict
 import copy
 from calculations.utils.calculations.integral_ratios import integral_ratios
 from calculations.utils.data_cleaning.dividir_productos import dividir_productos
+from calculations.utils.validaciones import validar_datos
 from scipy.integrate import trapezoid
 
 import numpy as np
@@ -51,15 +53,24 @@ def rendimiento_filtrar_datos(request):
         E_out *=1e6
         current *=1e-6
 
-        # Consultamos la base de datos "reactions"
-        try:
+        #-------------------------------------------------------------------------------
+        # Validar datos entrantes
+        errores = validar_datos(isotope,current, E_in, E_out, ti, tp)
+        if errores:
+            mensaje_errores = "<br>".join(errores)
+            return HttpResponse(mensaje_errores, status=400)
+        #-------------------------------------------------------------------------------
+        # Consulta al isotopo.
+        try: 
             isotopo = Isotope.objects.using('nuclear_properties').get(symbol=isotope)
-
-        except Isotope.DoesNotExist:
+        
+        except Isotope.DoesNotExist: 
             result = "No se encontró el isótopo."
-
-        #TODO: Falta validación para comprobar que el isotopo ingresado es pseudo-estable.
-
+        #-------------------------------------------------------------------------------
+        #
+        #TODO: Falta validación para comprobar que el isotopo ingresado es pseudo-stable.
+        #
+        #-------------------------------------------------------------------------------
 	    # Usar datos de DB nuclear_properties
         Z_p = isotopo.Z
         A_p = isotopo.A
@@ -74,8 +85,8 @@ def rendimiento_filtrar_datos(request):
         datos_evaluados, datos_experimentales = get_reactions_by_target_projectile(isotope, projectile)
         
         ### Testing ###
-        print(len(datos_evaluados),"\n")
-        print(len(datos_experimentales),"\n")
+        #print(len(datos_evaluados),"\n")
+        #print(len(datos_experimentales),"\n")
         ###############
 
         # Guardar en caché (expira en 30 minutos) 
@@ -158,7 +169,7 @@ def rendimiento_mostrar_resultados(request):
 
         ### Datos seleccionados ###
         evaluados_seleccionados = request.POST.getlist("selected_evaluated")
-        print(evaluados_seleccionados)
+        #print(evaluados_seleccionados)
         evaluados_seleccionados = [int(i) for i in evaluados_seleccionados]
 
         datos_seleccionados = [datos_evaluados[i] for i in evaluados_seleccionados]

@@ -2,14 +2,13 @@
 
 {% block customStyle %} 
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
             text-align: center;
         }
         .container {
-            background: white;
+            background: var(--color-container-bg);
+            color: var(--color-text-light);
             padding: 2vh;
             margin: 2vh auto;
             width: 80%;
@@ -28,10 +27,11 @@
             margin-bottom: 3vh;
         }
         .form-container {
+            background: transparent;
+            border: 1px solid var(--color-accent);
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2vw;
-            background: #eceff1;
             padding: 2vh;
             border-radius: 2vh;
             box-shadow: 0 0.4vh 0.6vh rgba(0, 0, 0, 0.1);
@@ -40,31 +40,63 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #cfd8dc;
+            border: 1px solid var(--color-accent-dark);
             padding: 1vh;
             border-radius: 1vh;
         }
         label {
-            font-size: 1.8vh;
+            font-size: 2.2vh;
             margin-right: 1vw;
         }
         input {
             width: 8vw;
+            {% comment %} background: transparent;
+            color: var(--color-text-light); {% endcomment %}
             padding: 0.8vh;
             border: 1px solid #333;
             border-radius: 1vh;
             text-align: center;
         }
+        
+        {% comment %} input:focus { 
+            outline:none; 
+        }  {% endcomment %}
+
+        /* Estilos más compactos para el grupo de radio inputs */
+        .ratio-input {
+            display: inline-block;       /* Ajustar el contenedor al contenido */
+            white-space: nowrap;         /* Evitar saltos de línea innecesarios */
+        }
+
+        .ratio-input label {
+            display: inline-block;       /* Cada etiqueta toma solo el ancho necesario */
+            margin-right: 5px;           /* Espaciado estrecho entre opciones */
+            font-size: 14px;             /* Fuente un poco más pequeña */
+            vertical-align: middle;      /* Alinear verticalmente en línea */
+            padding: 2px 4px;            /* Relleno reducido */
+            cursor: pointer;
+        }
+
+        .ratio-input input[type="radio"] {
+            vertical-align: middle;      /* Asegura que el radio esté alineado con el texto */
+            margin-right: 3px;           /* Mínimo margen a la derecha */
+            width: 15px;                 /* Tamaño fijo para controlar el ancho */
+            height: 15px;                /* Tamaño fijo para controlar la altura */
+        }
         .submit-button {
+            background: var(--gradient-linear);
             margin-top: 2vh;
             padding: 1vh 2vw;
             font-size: 1.8vh;
-            background: #1976d2;
             color: white;
             border: none;
             border-radius: 1vh;
             cursor: pointer;
             text-align: left;
+            transition: transform 0.2s;
+        }
+        .submit-button:hover {
+            transform: scale(1.10);
         }
 {% endblock %}
 
@@ -77,31 +109,44 @@
         <div class="form-container">
             <div class="form-group">
                 <label for="isotopo">Isótopo:</label>
-                <input type="text" id="isotopo" name="isotopo" placeholder="Ej. Cobalto-60">
+                <input type="text" id="isotopo" name="isotopo" placeholder="Ej. Sc47" required>
             </div>
             <div class="form-group">
-                <label for="energia_salida">Energía Salida:</label>
-                <input type="number" id="energia_salida" name="energia_salida" placeholder="Ej. 1.17 MeV" step="0.01" min="0" max="100">
+                <label for="energia_entrada">Energía Entrada (Mev):</label>
+                <input type="number" id="energia_entrada" name="energia_entrada" placeholder="Ej. 15" step="0.01" min="0" max="50" required>
             </div>
             <div class="form-group">
-                <label for="tiempo_irradiacion">Tiempo Irradiación:</label>
-                <input type="number" id="tiempo_irradiacion" name="tiempo_irradiacion" placeholder="Ej. 5 horas">
+                <label for="tiempo_irradiacion">Tiempo Irradiación (horas):</label>
+                <input type="number" id="tiempo_irradiacion" name="tiempo_irradiacion" placeholder="Ej. 5" min="0" max="72" required>
             </div>
             <div class="form-group">
-                <label for="proyectil">Proyectil:</label>
-                <input type="text" id="proyectil" name="proyectil" placeholder="Ej. Neutrones">
+                <label>Proyectil:</label>
+                <div class="ratio-input">
+                    <label for="proyectil_P">
+                        <input type="radio" id="proyectil_P" name="proyectil" value="P" required> P
+                    </label>
+                    {% comment %} <label for="proyectil_A">
+                        <input type="radio" id="proyectil_A" name="proyectil" value="A"> A
+                    </label>
+                    <label for="proyectil_D">
+                        <input type="radio" id="proyectil_D" name="proyectil" value="D"> D
+                    </label>
+                    <label for="proyectil_T">
+                        <input type="radio" id="proyectil_T" name="proyectil" value="T"> T {% endcomment %}
+                    </label>
+                </div>
             </div>
             <div class="form-group">
-                <label for="energia_entrada">Energía Entrada:</label>
-                <input type="number" id="energia_entrada" name="energia_entrada" placeholder="Ej. 2.5 MeV">
+                <label for="energia_salida">Energía Salida (MeV):</label>
+                <input type="number" id="energia_salida" name="energia_salida" placeholder="Ej. 10" step="0.01" min="0" max="50" required>
             </div>
             <div class="form-group">
-                <label for="tiempo_enfriamiento">Tiempo Enfriamiento:</label>
-                <input type="number" id="tiempo_enfriamiento" name="tiempo_enfriamiento" placeholder="Ej. 10 días">
+                <label for="tiempo_enfriamiento">Tiempo Enfriamiento (horas):</label>
+                <input type="number" id="tiempo_enfriamiento" name="tiempo_enfriamiento" placeholder="Ej. 10" min="0" max="72" required>
             </div>
             <div class="form-group">
-                <label for="corriente">Corriente:</label>
-                <input type="number" id="corriente" name="corriente" placeholder="Ej. 50 μA">
+                <label for="corriente">Corriente (μA):</label>
+                <input type="number" id="corriente" name="corriente" placeholder="Ej. 50" min="0" max="1000" required>
             </div>
         </div>
         <button type="submit" class="submit-button">Calcular</button>

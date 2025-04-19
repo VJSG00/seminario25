@@ -3,8 +3,22 @@
 {% endblock %}
 
 <style>
+    
+    :root {
+        font-family: Arial, sans-serif;
+        --color-text-light: #e0e6f1;
+        --color-text-dark:rgba(255, 255, 255, 0.9);
+        --bg-color: #1a1f2b;
+        --header-bg-color: transparent;
+        --gradient-linear: linear-gradient(65deg, #1de9b6, #00bfa5);
+        --color-accent-dark: #00bfa5;
+        --color-accent: #1de9b6;
+        --footer-bg-color: #0d0d0d;
+        --color-container-bg: rgba(30, 35, 50, 0.7);
+    }
+
     body {
-        background-color: #f5f5f5;
+        background-color: var(--bg-color);
         margin: 0;
         display: flex;
         flex-direction: column;
@@ -12,7 +26,7 @@
     }
 
     .header {
-        background: transparent;
+        background: var(--header-bg-color);
         padding: 2vh;
         font-size: 4vh;
         text-align: left;
@@ -29,13 +43,13 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        background: linear-gradient(65deg, #1e3c72, #2a5298);
+        background: var(--gradient-linear);
     }
 
     .header a {
         text-decoration: none;
         font-weight: bold;
-        background: linear-gradient(65deg, #1e3c72, #2a5298);
+        background: var(--gradient-linear);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -50,7 +64,7 @@
     }
 
     .footer {
-        background: #0d0d0d;
+        background: var(--footer-bg-color);
         color: white;
         padding: 1vh;
         width: 100%;

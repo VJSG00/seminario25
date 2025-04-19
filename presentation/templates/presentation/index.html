@@ -2,19 +2,19 @@
 
 {% block customStyle %}   
     body {
-        font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #f0f0f0;
-        text-align: center;
+        {% comment %} text-align: center;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: center; {% endcomment %}
         height: 100vh;
     }
     .container {
-        background: white;
+        text-align: center;
+        background: var(--color-container-bg);
         padding-top: 8vh;
+        color: var(--color-text-light);
         padding-bottom: 8vh;
         margin: auto;
         width: 75%;
@@ -28,19 +28,19 @@
         margin-top: 4vh;
     }
     .option {
-        background: #2a5298;
+        background: var(--color-accent-dark);
         padding: 4vh;
         border-radius: 1vh;
         width: 25vw;
         box-shadow: 0 0.5vh 0.8vh rgba(0, 0, 0, 0.2);
         cursor: pointer;
         color: white;
-        transition: background 0.3s ease;
+        transition: transform 0.2s;
         border: none;
         display: inline-block;
     }
     .option:hover {
-        background: #1e3c72;
+        transform: scale(1.05);
     }
     /* Estilos para simular encabezado y párrafo */
     .option .button-heading {

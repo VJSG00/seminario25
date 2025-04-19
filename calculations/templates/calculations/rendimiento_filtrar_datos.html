@@ -6,6 +6,16 @@
   <title>Simprod</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
   <style>
+    .custom-container {
+      background: white;
+      color: white;
+      padding: 2vh;
+      margin: 2vh auto;
+      margin-top: 5vh;
+      width: 80%;
+      border-radius: 2vh;
+      box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+    }
     .lab-checklist {
       background: #f1f1f1;
       padding: 10px;
@@ -23,7 +33,7 @@
 </head>
 <body>
 
-<div class="container mt-4">
+<div class="custom-container">
   <h1 class="mb-4">Simprod</h1>
 
   <form method="post" action="{% url 'rendimiento_resultado' %}">
