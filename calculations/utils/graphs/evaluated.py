@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
 
-def grafico_secciones_evaluadas(datos_evaluados:list):
+def grafico_secciones_evaluadas(datos_evaluados:list, tipo_datos:str):
     """
     TODO
     """
@@ -11,8 +11,30 @@ def grafico_secciones_evaluadas(datos_evaluados:list):
 
     # Iterar a traves de la lista de dataframes
     for data in datos_evaluados:
-        
-        fig.add_trace(go.Scatter(x=np.array(data['E,ev'])*1e-6, y=data['Sig,b'], mode='lines', name=f'{data["reaction"]} {data["reference"]}'))
+
+        if tipo_datos=="Ev":
+            name = f'{data["reaction"]} {data["reference"]}'
+            fig.add_trace(go.Scatter(x=np.array(data['Energy'])*1e-6, y=data['Sig'], mode='lines', name=name))
+
+
+        elif tipo_datos=="Ex" and data['api']=="exfor": #<--- Datos experimentales
+            name = f'{data["reaction"]} {data["author"]}'
+            fig.add_trace(go.Scatter(x=np.array(data['Energy'])*1e-6,
+                             y=data['Sig'],
+                             error_y = dict(type='data', array=data['dSig']),
+                             mode='markers',
+                             #mode='lines+markers',
+                             #line=dict(dash='dash'),
+                             name=name,
+                             #hovertemplate='Energía: %{x:.2f} MeV<br>Sección eficaz: %{y:.2f} barns')
+                             ))
+
+        elif tipo_datos=="Ex" and data['api']=="endf":  #<--- Datos evaluados no elasticos para los datos experimentales
+            name = f'{data["reaction"]} {data["reference"]}'
+            fig.add_trace(go.Scatter(x=np.array(data['Energy'])*1e-6, y=data['Sig'], mode='lines', name=name))
+
+        else:
+            continue
 
     # Configurar layout
 
@@ -38,7 +60,7 @@ def grafico_secciones_evaluadas(datos_evaluados:list):
         plot_bgcolor="white",
         xaxis_title='Energía (MeV)',
         yaxis_title='Sección Eficaz (Barns)',
-        title='Sección Eficaz Evaluada vs Energía',
+        title='Sección Eficaz vs Energía',
         showlegend=True,
         xaxis_showgrid=True,
         yaxis_showgrid=True,

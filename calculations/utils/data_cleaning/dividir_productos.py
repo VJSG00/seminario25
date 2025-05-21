@@ -15,6 +15,7 @@ def dividir_productos(datos_filtrados):
         if data['emission'] == 'NON':
             datos_divididos['no_elastic_data'].append(data)
         else:
-            datos_divididos[data['product']].append(data)
+            product = data['product']
+            datos_divididos[product].append(data)
     
     return datos_divididos

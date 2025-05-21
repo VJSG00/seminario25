@@ -13,7 +13,7 @@ def grafico_secciones_experimentales(datos_experimentales: list):
     # Iterar a traves de la lista de dataframes
     for data in datos_experimentales:
         
-        fig.add_trace(go.Scatter(x=np.array(data['E,ev'])*1e-6, y=data['Sig,b'], name=f'{data["reaction"]} {data["author"]}'))
+        fig.add_trace(go.Scatter(x=np.array(data['Energy'])*1e-6, y=data['Sig'], name=f'{data["reaction"]} {data["author"]}'))
 
     # Configurar layout
 

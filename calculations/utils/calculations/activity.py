@@ -20,10 +20,18 @@ def numero_nucleos_y_actividad(datos_productos: dict, products: list, A:int ,ti:
   # Iterar sobre cada isotopo producido
   for product in products:
     
+    #print(f"entrada de datos: {data_output[product]}")
+
     # Iterar sobre cada conjunto de datos.
     for data in data_output[product]:
-      half_life = (data['final_isotope'].lambda_value)/3600 #horas⁻¹
-      Lambda = np.log(2)/half_life #[horas⁻¹]
+
+      if not data['final_isotope'].half_life:
+        continue
+
+      #print(f"\ndata: {data}\n")
+      Lambda = (data['final_isotope'].half_life)/3600 #horas⁻¹
+      Lambda = np.log(2)/Lambda #[horas⁻¹]
+      #print(f"Lambda: {Lambda}")
       rti = data['rti']
       rti *= 3600 #[horas⁻¹]
 
@@ -36,7 +44,7 @@ def numero_nucleos_y_actividad(datos_productos: dict, products: list, A:int ,ti:
         ### TODO: Todo esto es primer orden.
         # Factor de creación - primer orden.
         creation_term = nt_0*(rti/ (Lambda - rt))
-        print("\n", creation_term, rt, Lambda, rti)
+        #print("\n", creation_term, rt, Lambda, rti)
 
         # Nucleos de i en el tiempo de creación - primer orden.
         Ni = creation_term * (np.exp(-rt * ti)  -np.exp(-Lambda * ti))

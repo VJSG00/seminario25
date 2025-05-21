@@ -5,7 +5,7 @@
         margin: 0;
         padding: 0;
         {% comment %} text-align: center;
-        display: flex;
+        display: grid;
         flex-direction: column;
         justify-content: center; {% endcomment %}
         height: 100vh;
@@ -22,16 +22,17 @@
         box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
     }
     .options {
-        display: flex;
-        justify-content: center;
-        gap: 2vw;
-        margin-top: 4vh;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-content:center;
+        justify-items: center;
+        gap: 15px;
     }
     .option {
         background: var(--color-accent-dark);
         padding: 4vh;
         border-radius: 1vh;
-        width: 25vw;
+        width: 30vw;
         box-shadow: 0 0.5vh 0.8vh rgba(0, 0, 0, 0.2);
         cursor: pointer;
         color: white;
@@ -67,8 +68,7 @@
         <button type="button" class="option"
                 {% comment %} onclick="window.location.href='{% url 'rendimiento_ingresar' %}'"  {% endcomment %}
                 disable>
-            <span class="button-heading"> (En mantenimiento)</span>
-            <span class="button-heading"> API IAEA + ENDF + EXFOR</span>
+            <span class="button-heading"> API: IAEA + ENDF + EXFOR</span>
             <span class="button-subheading">Datos Actualizados. Puede tardar minutos.</span>
         </button>
     </div>

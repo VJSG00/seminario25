@@ -21,9 +21,9 @@ def interpolation_vs_experimental_data(secciones, energias, evaluated_data):
     # Graficar datos experimentales
     for df in evaluated_data:
         if len(df) > 100:
-            fig.add_trace(go.Scatter(x=df['E,ev'], y=df['Sig,b'], mode='lines', line=dict(color='blue', width=1, backoff=0.1)))
+            fig.add_trace(go.Scatter(x=df['Energy'], y=df['Sig'], mode='lines', line=dict(color='blue', width=1, backoff=0.1)))
         else:
-            fig.add_trace(go.Scatter(x=df['E,ev'], y=df['Sig,b'], mode='markers', marker=dict(color='blue', opacity=0.2)))
+            fig.add_trace(go.Scatter(x=df['Energy'], y=df['Sig'], mode='markers', marker=dict(color='blue', opacity=0.2)))
 
     # Configurar ejes y leyenda
     fig.update_layout(
@@ -50,7 +50,7 @@ def grafico_secciones_evaluadas(datos_evaluados):
     # Iterar a traves de la lista de dataframes
     for df in datos_evaluados:
         
-        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], mode='lines', name=f'{df["reaction"].iloc[0]} {df["library"].iloc[0]}'))
+        fig.add_trace(go.Scatter(x=df['Energy']*1e-6, y=df['Sig'], mode='lines', name=f'{df["reaction"].iloc[0]} {df["library"].iloc[0]}'))
 
     # Configurar layout
 
@@ -106,7 +106,7 @@ def grafico_secciones_experimentales(datos_experimentales):
     # Iterar a traves de la lista de dataframes
     for df in datos_experimentales:
         
-        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], name=f'{df["React"].iloc[0]} {df["author"].iloc[0]}'))
+        fig.add_trace(go.Scatter(x=df['Energy']*1e-6, y=df['Sig'], name=f'{df["React"].iloc[0]} {df["author"].iloc[0]}'))
 
     # Configurar layout
 
@@ -160,7 +160,12 @@ def grafico_actividad(ti, tp, datos_finales, productos):
     for producto in productos:
 
         for data in datos_finales[producto]:
-            
+
+            try:
+                data['A_list']
+            except KeyError:        #<--- Esto significa que el producto es estable.
+                continue        
+
             for datos_actividad in data['A_list']:
                 
                 A = np.array(datos_actividad['Ai'].tolist() + datos_actividad['Ap'].tolist())

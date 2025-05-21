@@ -12,21 +12,24 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^8sep(v7iu@o&7gij4#42nf^t2yq-!_&d^6xu@l3sa*0&xtq*y'
+from simulation.settings import get_secret
+SECRET_KEY = get_secret('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS=['*']
 
 
 # Application definition
@@ -73,6 +76,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'simulation.wsgi.application'
 
+load_dotenv("doc.env")
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -82,14 +86,13 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
-    'reactions': {
-        # Base de datos para las reacciones nucleares
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'reactions_data.db',
-    },
-    'nuclear_properties': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'nuclear_properties.db',
+    'nuclear_data': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('PG-NAME'),
+        'USER': os.getenv('PG-USER'),
+        'PASSWORD': os.getenv('PG-PSWD'),
+        'HOST':os.getenv('PG-HOST'),
+        'PORT':os.getenv('PG-PORT'),
     }
 }
 

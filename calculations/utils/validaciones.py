@@ -29,7 +29,7 @@ def validar_datos(isotopo, corriente, E_in, E_out, ti, tp):
         # --- Validación del Isótopo ---
     try:
         # Buscamos el isótopo usando la base de datos "nuclear_properties"
-        _ = Isotope.objects.using('nuclear_properties').get(symbol=isotopo)
+        Isotope.objects.using('nuclear_data').get(symbol=isotopo)
     except Isotope.DoesNotExist:
         errores.append(f"No se encontró el isótopo: {isotopo}")
 

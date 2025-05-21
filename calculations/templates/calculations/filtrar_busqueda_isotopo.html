@@ -1,0 +1,130 @@
+{% extends 'calculations/assets/main.html' %}
+
+{% block customLink %}
+{% endblock %}
+
+{% block customStyle %}
+    body {
+      color: var(--color-text-light)
+    }
+
+    .container {
+      background: var(--color-container-bg);
+      color: var(--color-text-light);
+      padding: 2vh;
+      margin: 2vh auto;
+      width: 90%;
+      border-radius: 2vh;
+      box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+      display: grid;
+    }
+    
+    .contenedor-datos {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .lab-checklist {
+      color: black;
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 400px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    /* Reducir el espacio vertical del gráfico */
+    .graph-container {
+      max-width: 800px;
+      width: 100%;
+      max-height: 600px;
+      overflow: auto;
+    }
+    /* Media Query: Se aplica cuando el ancho de la ventana es 1040px o más */
+    @media (min-width: 1040px) { /* Punto de quiebre: ~800px (gráfico) + ~200px (checklist) + gap */
+      .contenedor-datos {
+        /* El gráfico toma el espacio restante (1fr), la checklist tiene una columna de 220px */
+        /* El gráfico no superará su propio max-width: 800px */
+        /* La checklist tiene max-width: 200px, así que 220px para la columna le da espacio para padding */
+        grid-template-columns: 1fr 220px;
+      }
+    }
+
+    .submit-button {
+      background: var(--gradient-linear);
+      margin-top: 2vh;
+      padding: 1vh 2vw;
+      font-size: 1.8vh;
+      color: white;
+      border: none;
+      border-radius: 1vh;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.2s;
+    }
+    .submit-button:hover {
+      transform: scale(1.10);
+    }
+{% endblock %}
+
+{% block mainContent %}
+
+<div class="container">
+  <h2>Selección de datos</h2>
+  <p  style="margin-bottom:4;">Seleccione los datos que quiera analizar</p>
+
+  <form method="post" action="{% url 'rendimiento_resultado' %}">
+    {% csrf_token %}
+    <!-- Campo oculto para la cache_key -->
+    <input type="hidden" name="cache_key" value="{{ cache_key }}">
+
+    <!-- Grupo: Datos Evaluados -->
+    {% if evaluated_plot %}
+      <div class="contenedor-datos">
+        <!-- Gráfico evaluado -->
+        <div class="graph-container">
+          {{ evaluated_plot | safe }}
+        </div>
+        <!-- Checkboxes de laboratorios evaluados -->
+        <div class="lab-checklist">
+          <h5>Referencias de los datos.</h5>
+
+          {% for emission, items in grupos_datos.items %}
+            <fieldset style="border:1px solid #ccc; padding:1em; margin-bottom:1em;">
+            <legend style="font-weight:bold;">Emisión: {{ emission }}</legend>
+
+              {% for item in items %}
+                <label style="display:block; margin:0.3em 0;">
+                  <input
+                    type="radio"
+                    name="selected_{{ emission }}"
+                    value="{{ item.i }}"
+                    required
+                    {% if forloop.first %}checked{% endif %}
+                  >
+                  {{ item.label }}
+                </label>
+                {% empty %}
+                <label>no data</label>
+              {% endfor %}
+
+            </fieldset>
+          {% empty %}
+            <label>no emission</label>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Botón para enviar el formulario y calcular -->
+    <div style="margin-top: 4;">
+      <button type="submit" class="submit-button">Seleccionar datos y calcular</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
+
+{% block customScript %}
+{% endblock %}
