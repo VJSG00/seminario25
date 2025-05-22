@@ -20,6 +20,7 @@ from .utils.graphs.data import grafico_actividad
 from calculations.utils.calculations.activity import numero_nucleos_y_actividad
 from calculations.models import Isotope
 from .utils.elementos import densidad
+from .utils.diccionario_de_cargas import diccionario_de_cargas, diccionario_de_masa_equivalente
 from .utils.get_data_db import get_nuclear_properties_by_symbol, get_reactions_by_target_projectile, consultar_reaccion_por_producto, obtener_targets_unicos, obtener_proyectiles_unicos
 from calculations.utils.calculations.bethe_bloch import bethe_bloch
 from calculations.utils.calculations.sigma_integral import calculo_sigma, filtrar_y_calcular_sigma
@@ -316,10 +317,13 @@ def rendimiento_mostrar_resultados(request):
         ### Diferencial para el elemento target ###
         #TODO: MEJORAR ESTO PARA OTRAS PARTICULAS INCIDENTES# Intervalos equisdistantes para integrar
         # Intervalos a integrar
+        m_0 = diccionario_de_masa_equivalente[projectile]
+
+        z_p = diccionario_de_cargas[projectile]
+
         N = 500
         E = np.linspace(E_out, E_in, N)
-        z_p = 1
-        dEdx = np.array([bethe_bloch(e, I, rho_p, Z_p, A_p) for e in E ])
+        dEdx = np.array([bethe_bloch(e, I, rho_p, Z_p, A_p, z_p, m_0) for e in E ])
 
         ################################################################################
         # Interpolamos sigma para los puntos de integración. 
@@ -356,7 +360,7 @@ def rendimiento_mostrar_resultados(request):
         context = {
             'isotope': isotope,
             'projectile': projectile,
-            'current': current,
+            'current': current*1e6,
             'E_in': E_in,
             'E_out': E_out,
             'vtar':vtar,

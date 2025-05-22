@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def bethe_bloch(E, I, rho, Z, A, z=1, m_0=938.272e6):
+def bethe_bloch(E, I, rho, Z, A, z, m_0):
 
     # Cálculo de beta y gamma
     beta = np.sqrt(E * (E + 2 * m_0) / ((E + m_0)**2))
