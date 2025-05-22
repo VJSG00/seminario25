@@ -7,8 +7,9 @@ import time
 import uuid
 from collections import defaultdict
 import copy
-from calculations.utils.calculations.integral_ratios import integral_ratios
-from calculations.utils.data_cleaning.dividir_productos import dividir_productos
+from calculations.utils.calculations.integral_ratios import integral_ratios, calculo_ratio_producto
+from calculations.utils.data_cleaning.dividir_productos import dividir_productos, dividir_por_proyectil_y_target
+from calculations.utils.graphs.activity import grafico_actividad_producto
 from calculations.utils.validaciones import validar_datos
 from scipy.integrate import trapezoid
 
@@ -17,7 +18,7 @@ import numpy as np
 
 # Funciones propias
 from .utils.graphs.data import grafico_actividad
-from calculations.utils.calculations.activity import numero_nucleos_y_actividad
+from calculations.utils.calculations.activity import numero_nucleos_y_actividad, numero_nucleos_y_actividad_producto
 from calculations.models import Isotope
 from .utils.elementos import densidad
 from .utils.diccionario_de_cargas import diccionario_de_cargas, diccionario_de_masa_equivalente
@@ -75,14 +76,14 @@ def rendimiento_filtrar_datos(request):
         #
         #-------------------------------------------------------------------------------
 	    # Usar datos de DB nuclear_properties
-        Z_p = isotopo.Z
-        A_p = isotopo.A
+        #Z_p = isotopo.Z
+        #A_p = isotopo.A
         # Consultar densidad en elementos.py
-        rho_p = densidad[Z_p]
+        #rho_p = densidad[Z_p]
 
         # Calcular otros datos
-        I = Z_p*(9.76 + 58.8*(Z_p**(-1.19)))
-        Bi = 1
+        #I = Z_p*(9.76 + 58.8*(Z_p**(-1.19)))
+        #Bi = 1
         
         #-------------------------------------------------------------------------------
         # Consultar las reacciones a la base de datos.
@@ -160,11 +161,11 @@ def rendimiento_filtrar_datos(request):
             "E_out": E_out, 
             "ti": ti, 
             "tp": tp,
-            "Z_p": Z_p, 
-            "A_p": A_p,
-            "rho_p": rho_p,
-            "I": I,
-            "Bi": Bi,
+            #"Z_p": Z_p, 
+            #"A_p": A_p,
+            #"rho_p": rho_p,
+            #"I": I,
+            #"Bi": Bi,
             "datos_obtenidos": datos_obtenidos,
             "tipo_busqueda": tipo_busqueda,
             #"datos_experimentales": datos_experimentales,
@@ -220,14 +221,26 @@ def rendimiento_mostrar_resultados(request):
         E_out = data["E_out"]
         ti = data["ti"]
         tp = data["tp"]
-        Z_p = data["Z_p"]
-        A_p = data["A_p"]
-        rho_p = data["rho_p"]
-        I = data["I"]
-        Bi = data["Bi"]
+        #Z_p = data["Z_p"]
+        #A_p = data["A_p"]
+        #rho_p = data["rho_p"]
+        #I = data["I"]
+        #Bi = data["Bi"]
         #experimental_data = data["datos_experimentales"]
         datos_obtenidos = data["datos_obtenidos"]
         tipo_busqueda = data["tipo_busqueda"]
+        
+        #--------------------------------------------------------------------------
+        isotopo = Isotope.objects.using('nuclear_data').get(symbol=isotope)
+        # Consultamos datos necesarios.
+        Z_p = isotopo.Z
+        A_p = isotopo.A
+        # Consultar densidad en elementos.py
+        rho_p = densidad[Z_p]
+
+        # Calcular otros datos
+        I = Z_p*(9.76 + 58.8*(Z_p**(-1.19)))
+        Bi = 1
         
         #--------------------------------------------------------------------------
         #Establecemos 
@@ -370,9 +383,136 @@ def rendimiento_mostrar_resultados(request):
             'elapsed_time': elapsed_time
         }
 
-        return render(request, 'calculations/rendimiento_resultado.html', context)
+        return render(request, 'calculations/rendimiento_resultado_target.html', context)
 
     else:
 
         return redirect(rendimiento_ingresar_datos)
     
+def rendimiento_resultados_isotopo(request):
+    
+    if request.method == "POST":
+   
+        # Me interesa medir el tiempo de calculo.
+        start_time = time.time()
+
+        #--------------------------------------------------------------------------
+        # Recupera la clave de la caché
+        cache_key = request.POST.get("cache_key")
+        data = cache.get(cache_key)
+        
+        # Validación de si el caché existe.
+        if data is None:
+            # En caso de que los datos no estén en la caché,
+            # puedes reconsultar la API o notificar un error.
+            return HttpResponse("Los datos han expirado. Reintente la operación", status=400)
+        #--------------------------------------------------------------------------
+        # Extraer valores necesarios
+        isotope = data["isotope"]
+        projectile = data["projectile"]
+        current = data["current"]
+        E_in = data["E_in"]
+        E_out = data["E_out"]
+        ti = data["ti"]
+        tp = data["tp"]
+        #experimental_data = data["datos_experimentales"]
+        datos_obtenidos = data["datos_obtenidos"]
+        tipo_busqueda = data["tipo_busqueda"]
+        
+        #--------------------------------------------------------------------------
+        #Establecemos 
+        S=1.0
+        #q_e = -1.602e-19 # Coulomb
+        
+        ################################################################################
+        # TODO: Filtrar tambien los experimentales.
+        # experimentales_seleccionados = request.POST.getlist("selected_experimentals")
+        # experimentales_seleccionados = [int(i) for i in experimentales_seleccionados]
+        # print("No se ha seleccionado datos experimentales")
+
+        #--------------------------------------------------------------------------
+        # 1) saber cuales emisisones existen.
+        emission_keys = list({(d["projectile"],d["target"],d["emission"]) for d in datos_obtenidos })
+
+        # 2) recuperar los indices marcados.
+        todos_idxs = []
+        for em in emission_keys:
+            raw = request.POST.getlist(f"selected_{em}")  # ej. ['2','7']
+            todos_idxs.extend(int(i) for i in raw)
+
+
+        # 3) ordenar indices. El orden es importante despues.
+            arr = np.array(todos_idxs, dtype=int)
+            arr.sort()
+            evaluados_seleccionados = arr.tolist()
+        
+
+
+        # testing
+        #print(f'\nevaluados seleccionados:{evaluados_seleccionados}\n')
+
+        ### Datos seleccionados ###
+        #evaluados_seleccionados = request.POST.getlist("selected_evaluated")
+        #print(evaluados_seleccionados)
+        #evaluados_seleccionados = [int(i) for i in evaluados_seleccionados]
+
+        datos_seleccionados = [datos_obtenidos[i] for i in evaluados_seleccionados]
+        ################################################################################
+        # Consultar datos de los hijos a la API
+        
+        #testing
+        #print(f"isotopos: {isotopes}")
+        #raise SyntaxError("Error para test")
+
+
+        ################################################################################
+        # Procesamos los datos extraidos de la BD
+        datos_procesados = procesar_datos(datos_seleccionados)
+
+        datos_interpolados = interpolar_datos(datos_procesados, num_puntos_adicionales=500 )
+
+        datos_filtrados = filtrar_datos(datos_interpolados, E_out, E_in)
+        
+        N = 500
+        E = np.linspace(E_out, E_in, N)
+
+        datos_con_sigma = filtrar_y_calcular_sigma(datos_filtrados, E)
+
+        datos_divididos = dividir_por_proyectil_y_target(datos_con_sigma)
+
+        pares_de_datos = list(datos_divididos.keys())
+        for par in pares_de_datos:
+            if len(datos_divididos[par]) < 2:
+                datos_divididos.pop(par)
+        ################################################################################
+        # Calculos 
+        isotopo = Isotope.objects.using('nuclear_data').get(symbol=isotope)
+
+        datos_con_ratios = calculo_ratio_producto(datos_divididos, current, E_in, E_out)
+        
+        half_life= isotopo.half_life
+        datos_finales = numero_nucleos_y_actividad_producto(datos_con_ratios, ti, tp, half_life)
+
+        plot_html = grafico_actividad_producto(datos_finales, ti, tp)
+
+        # Tiempo de carga:
+        elapsed_time = time.time() - start_time
+
+        # Contexto para resultados en render
+        context = {
+            'isotope': isotope,
+            'projectile': projectile,
+            'current': current*1e6,
+            'E_in': E_in,
+            'E_out': E_out,
+            'ti': ti,
+            'tc': tp,
+            'plot_html': plot_html,
+            'elapsed_time': elapsed_time
+        }
+
+        return render(request, 'calculations/rendimiento_resultado_producto.html', context)
+
+    else:
+
+        return redirect(rendimiento_ingresar_datos)

@@ -209,3 +209,4 @@ def grafico_actividad(ti, tp, datos_finales, productos):
     plot_html = fig.to_html(full_html=False)
 
     return plot_html
+

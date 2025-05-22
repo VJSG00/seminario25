@@ -80,3 +80,57 @@ def numero_nucleos_y_actividad(datos_productos: dict, products: list, A:int ,ti:
         data['A_list'].append(A_dict)
 
   return data_output
+
+def numero_nucleos_y_actividad_producto(resultado, ti, tp, half_life):
+  """
+  TODO
+  """
+  na = 6.022e23
+  Bi = 1
+
+  ti = np.linspace(0, ti, ti*2) #[horas]
+  tp = np.linspace(0, tp, tp*2) #[horas]
+
+  resultado_final = {}
+  data_input = copy.deepcopy(resultado)
+  
+  for tag, data in data_input.items():
+    
+    A = data['A_p']
+    Z = data['Z_p']
+    rho = data['rho_p']
+    vtar = data['vtar']
+
+    nt_0 = (na/A)*Bi*rho*vtar
+
+    Lambda = (np.log(2)/half_life)*3600
+    rti = data['rti']
+    rt = data['rt_prod']
+
+    rt *= 3600
+    rti *= 3600
+
+    creation_term = nt_0*(rti/ (Lambda - rt))
+
+    Ni = creation_term *(np.exp(-rt * ti)  -np.exp(-Lambda * ti))
+    Ni_max = Ni.max()
+
+    Np = Ni_max*np.exp(-Lambda*tp)
+
+
+    Ai = (Lambda/3600) * Ni    # 1/seg
+    Ap = (Lambda/3600) * Np
+
+    resultado_final[tag] = {
+        'target_symbol': data['target_symbol'],
+        'projectile': data['projectile'],
+        'reaction': data['reaction'],
+        'Ai': Ai,
+        'Ap': Ap,
+        'Ni': Ni,
+        'Np': Np,
+        'ti': ti,
+        'tp': tp,
+    }
+
+  return resultado_final

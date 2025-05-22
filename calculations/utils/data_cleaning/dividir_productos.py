@@ -19,3 +19,15 @@ def dividir_productos(datos_filtrados):
             datos_divididos[product].append(data)
     
     return datos_divididos
+
+def dividir_por_proyectil_y_target(datos_con_sigma):
+  """
+  TODO
+  """
+  data_input = copy.deepcopy(datos_con_sigma)
+  data_tag = defaultdict(list)
+
+  for data in data_input:
+    tag = (data['projectile'], data['target'])
+    data_tag[tag].append(data)
+  return data_tag
