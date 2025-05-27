@@ -16,7 +16,7 @@
         margin: 0;
         display: flex;
         flex-direction: column;
-        min-height: 100vh; /* Hace que el body tenga al menos la altura de la ventana */
+        min-height: 110vh; /* Hace que el body tenga al menos la altura de la ventana */
     }
 
     .header {
@@ -54,6 +54,22 @@
 		display: flex;
         justify-content: center; /* Centrado horizontal */
     }
+
+    .footer {
+        background: var(--footer-bg-color);
+        color: white;
+        padding: 0.5vh;
+        width: 100%;
+        text-align: center;
+    }
+    .footer a {
+        color: white;
+        text-decoration: none;
+        margin: 0 5px;
+    }
+    .footer a:hover {
+    text-decoration: underline;
+    }
     
     {% block customStyle %} {% endblock %}
 </style>
@@ -66,6 +82,15 @@
         {% block mainContent %} {% endblock %}
     </div>
 
-    <div class="footer">&copy; placeholder 2025</div>
+    <div class="footer">
+        <p>&copy; <span id="currentYear"></span> Victor Sanchez | <a href="mailto:victor.jsanchz@gmail.com">Contacto</a></p>
+    </div>
+
+<script>
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+</script>
+
+
 </body>
 </html>

@@ -21,14 +21,14 @@ def workflow_data(list_df, E_back, E_beam, I, rho, Z, A):
     dEdx = np.array([bethe_bloch(e, I, rho, Z, A) for e in E])
 
     # Para cada conjunto de datos, funcionalizamos su sección eficaz
-    try:
-      list_of_sigma_in = []
-      for i in range(len(energias)):
-        sigma_in = np.interp(E, energias[i], secciones[i])
-        list_of_sigma_in.append(sigma_in)
-      return list_of_sigma_in, dEdx, E
-    except(ValueError):
-      return None, None, None
+    #try:
+    list_of_sigma_in = []
+    for i in range(len(energias)):
+      sigma_in = np.interp(E, energias[i], secciones[i])
+      list_of_sigma_in.append(sigma_in)
+    return list_of_sigma_in, dEdx, E
+    #except(ValueError):
+      #return None, None, None
 
 def workflow_no_elastic_data(list_df, E_back, E_beam):
 
@@ -52,21 +52,20 @@ def workflow_no_elastic_data(list_df, E_back, E_beam):
     except(ValueError):
       return None
 
-def workflow(data_dict, E_back, E_beam, I_beam, I, rho, Z, A, z_p = 1, S=1.0):
+def workflow(data_dict, E_back, E_beam, I_beam, I_mean, rho, Z, A, z_p = 1, S=1.0):
   """
   Calcula las constantes de producción.
   """
 
   rt_dict = {}
   rti_dict = {}
-  rt_all_dict = {}
 
   # Calculo para la no elastica.
   no_elastic_data_list = data_dict['no_elastic_data']
-  print(f"Procesando datos no elasticos")
-  print(type(no_elastic_data_list))
-  print(type(no_elastic_data_list[0]))
-  print(no_elastic_data_list[0].columns)
+  #print(f"Procesando datos no elasticos")
+  #print(type(no_elastic_data_list))
+  #print(type(no_elastic_data_list[0]))
+  #print(no_elastic_data_list[0].columns)
   list_of_sigma_non = workflow_no_elastic_data(no_elastic_data_list, E_back, E_beam)
 
   # Para cada conjunto de datos:
@@ -75,56 +74,36 @@ def workflow(data_dict, E_back, E_beam, I_beam, I, rho, Z, A, z_p = 1, S=1.0):
     if reaction == 'no_elastic_data':
       continue
     else:
-      print(f"Procesando datos elasticos de la reaccion {reaction}")
-      list_of_sigma_in, dEdx, E = workflow_data(list_df, E_back, E_beam, I, rho, Z, A)
+      #print(f"Procesando datos elasticos de la reaccion {reaction}")
+      list_of_sigma_in, dEdx, E = workflow_data(list_df, E_back, E_beam, I_mean,rho, Z, A)
       if list_of_sigma_in == None:
         continue
-
-    # Calculo de la integral de la constante de producción
-    list_of_rt_int = []
-    list_of_rti_int = []
-    list_of_rti_all_int = []
+  
+    # Almacenamos
+    rt_list = []
+    rti_list = []
     
-    for sigma in list_of_sigma_in:
-      rti_int = trapezoid(y=sigma / dEdx, x=E)
-      list_of_rti_int.append(rti_int)
-
-    for sigma_non, sigma in zip(list_of_sigma_non, list_of_sigma_in):
-      d_sigma = sigma_non - sigma
-      rt_int = trapezoid(y =d_sigma / dEdx, x =E)
-      list_of_rt_int.append(rt_int)
-
-    for sigma_non in list_of_sigma_non:
-      rti_int_prod = trapezoid(y=sigma_non / dEdx, x=E)
-      list_of_rti_all_int.append(rti_int_prod)
-
     # Integral del volumen
     int_vol = trapezoid(y=1 / dEdx, x=E)
     vtar = S*int_vol
 
-    rt_list = []
-    rti_list = []
-    rti_all_list = []
+    # Termino de produccion
+    K = (I_beam/(z_p*q_e))*(1/vtar)
+    
+    for sigma, sigma_non in zip(list_of_sigma_in, list_of_sigma_non):
 
-    for rt_int, rti_int, rti_int_non in zip(list_of_rt_int, list_of_rti_int, list_of_rti_all_int):
-
-      # Integral de R_T
-      rt = (I_beam/(z_p*q_e))*(1/vtar)*rt_int
-      rt *= 1e-24
-      rt_list.append(rt)
-
-      # Integral R_{T->i}
-      rti = (I_beam/(z_p*q_e))*(1/vtar)*rti_int
+      rti_int = trapezoid(y=sigma / dEdx, x=E)
+      rti = K*rti_int
       rti *= 1e-24
       rti_list.append(rti)
 
-      # Integrar R_{Total}
-      rti_non = (I_beam/(z_p*q_e))*(1/vtar)*rti_int_non
-      rti_non *= 1e-24
-      rti_all_list.append(rti_non)
+      # Integral de R_T
+      rt_int = trapezoid(y=sigma_non / dEdx, x=E)
+      rt = K*rt_int
+      rt *= 1e-24
+      rt_list.append(rt)
 
     rt_dict[reaction] = rt_list
     rti_dict[reaction] = rti_list
-    rt_all_dict[reaction] = rti_all_list
 
-  return rt_dict, rti_dict, rt_all_dict, E, vtar
+  return rt_dict, rti_dict, E, vtar #, rt_prod_list

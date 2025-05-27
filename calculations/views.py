@@ -142,7 +142,9 @@ def rendimiento_filtrar_datos(request):
         else:
             return HttpResponse("Hubo un error con el tipo de busqueda seleccionado",400)
 
-
+        # Validacion adicional
+        if not datos_obtenidos:
+            return HttpResponse("La reaccion solicitada no se encuentra en la base de datos.",400)
 
         #datos_evaluados, datos_experimentales = get_reactions_by_target_projectile(isotope, projectile)
         

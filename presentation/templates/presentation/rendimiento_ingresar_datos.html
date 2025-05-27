@@ -85,7 +85,7 @@
 {% block mainContent %} 
 <div class="container">
     <h2>Cálculo de Rendimiento</h2>
-    <form method="post" action="{% url 'rendimiento_filtrar' %}">
+    <form method="post" action="{% url 'rendimiento_api_form' %}">
         {% csrf_token %}
 
         <div class="form-container">
@@ -94,22 +94,10 @@
                 <label>Datos:</label>
                 <div class="ratio-input">
                     <label for="datos_Ev">
-                        <input type="radio" id="datos_Ev" name="tipo_datos" value="Ev" required>Evaluados
+                        <input type="radio" id="datos_Ev" name="tipo_datos" value="endf" required>Evaluados
                     </label>
                     <label for="datos_Ex">
-                        <input type="radio" id="datos_Ev" name="tipo_datos" value="Ex">Experimentales
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Busqueda:</label>
-                <div class="ratio-input">
-                    <label for="busqueda">
-                        <input type="radio" id="busqueda_target" name="tipo_busqueda" value="Targ" required>Target
-                    </label>
-                    <label for="datos_Ex">
-                        <input type="radio" id="busqueda_producto" name="tipo_busqueda" value="Prod">Producto
+                        <input type="radio" id="datos_Ev" name="tipo_datos" value="exfor">Experimentales
                     </label>
                 </div>
             </div>

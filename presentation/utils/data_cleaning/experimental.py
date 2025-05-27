@@ -20,14 +20,14 @@ def procesar_datos(datos_evaluados):
 
   # Limpieza de los datos.
   for df in datos_evaluados:
-    df.sort_values('E,ev', inplace=True)
-    df.drop_duplicates(subset='E,ev', keep='first', inplace=True)
+    df.sort_values('EN', inplace=True)
+    df.drop_duplicates(subset='EN', keep='first', inplace=True)
 
   # Almacena datos relevantes.
   secciones = []
   energias = []
   for df in datos_evaluados:
-    e, s = Interpolar_Puntos_Adicionales(df['E,ev'], df['Sig,b'], 1000)
+    e, s = Interpolar_Puntos_Adicionales(df['EN'], df['DATA'], 1000)
     secciones.append(s)
     energias.append(e)
   return secciones, energias

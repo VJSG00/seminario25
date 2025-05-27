@@ -44,13 +44,13 @@ def grafico_secciones_evaluadas(datos_evaluados):
     Args: ti y tp es int, datos_evaluados es una lista de dataframes.
     """
 
-    
+
     fig = go.Figure()
 
     # Iterar a traves de la lista de dataframes
     for df in datos_evaluados:
-        
-        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], mode='lines', name=f'{df["reaction"].iloc[0]} {df["library"].iloc[0]}'))
+
+        fig.add_trace(go.Scatter(x=df['EN']*1e-6, y=df['DATA'], mode='lines', name=f'{df["reaction"].iloc[0]} {df["library"].iloc[0]}'))
 
     # Configurar layout
 
@@ -85,28 +85,37 @@ def grafico_secciones_evaluadas(datos_evaluados):
         xaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
         yaxis=dict(showline=True, linewidth=2, linecolor='lightgray'),
     )
-
-    # Display the plot
-#    fig.show()
-
-    # # Optional: Export the plot to an HTML file
+    
     plot_html = fig.to_html(full_html=False)
 
     return plot_html
 
-
-def grafico_secciones_experimentales(datos_experimentales):
+def grafico_secciones_experimentales(datos_evaluados):
     """
     Args: ti y tp es int, datos_evaluados es una lista de dataframes.
     """
 
-    
+
     fig = go.Figure()
 
     # Iterar a traves de la lista de dataframes
-    for df in datos_experimentales:
+    for df in datos_evaluados:
+
+      if df['api'].iloc[0] == "exfor":  #<-- Datos Experimentales
+
+        fig.add_trace(go.Scatter(x=df['EN']*1e-6,
+                                 y=df['DATA'],
+                                 mode='markers',
+                                 name=f'{df["reaction"].iloc[0]} {df["author"].iloc[0]}',
+                                 error_y=dict(
+                                  type='data',
+                                  array = df['DATA-ERR'],
+                                  thickness=1,
+                                  width=2),
+                                ))
+      else: 
         
-        fig.add_trace(go.Scatter(x=df['E,ev']*1e-6, y=df['Sig,b'], name=f'{df["React"].iloc[0]} {df["author"].iloc[0]}'))
+        fig.add_trace(go.Scatter(x=df['EN']*1e-6, y=df['DATA'], mode='lines', name=f'{df["reaction"].iloc[0]} {df["author"].iloc[0]}'))
 
     # Configurar layout
 
@@ -132,7 +141,7 @@ def grafico_secciones_experimentales(datos_experimentales):
         plot_bgcolor="white",
         xaxis_title='Energía (MeV)',
         yaxis_title='Sección Eficaz (Barns)',
-        title='Sección Eficaz Experimental vs Energía',
+        title='Sección Eficaz vs Energía',
         showlegend=True,
         xaxis_showgrid=True,
         yaxis_showgrid=True,
@@ -143,10 +152,17 @@ def grafico_secciones_experimentales(datos_experimentales):
     )
 
     # Display the plot
-    # fig.show()
+    #fig.show()
+
+    #if not os.path.exists("images"):
+    #    os.makedirs("images")
+    #svg_file=fig.write_image("images/fig1.svg")
+    #return svg_file
 
     # # Optional: Export the plot to an HTML file
+    # fig.write_html('activity_plot.html')
     plot_html = fig.to_html(full_html=False)
+
     return plot_html
 
 def grafico_actividad(ti, tp, Ai_dict, Ap_dict):

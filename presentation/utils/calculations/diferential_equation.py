@@ -1,7 +1,9 @@
 import numpy as np
+from presentation.utils.calculations.api_iaea import get_half_life
+from presentation.utils.funciones_asistentes import extraer_producto_datos_evaluados
 
 # Función de irradiación
-def numero_nucleos(ti, tp, lam1, rho, A, rt_dict, rti_dict, vtar, Bi):
+def numero_nucleos(ti, tp, rho, A, rt_dict, rti_dict, vtar, Bi):
 
   # constantes
   na = 6.022e23 # numero de avogadro, entidades/mol
@@ -18,6 +20,17 @@ def numero_nucleos(ti, tp, lam1, rho, A, rt_dict, rti_dict, vtar, Bi):
 
   # Itera sobre cada conjunto de reacciones
   for (reaction, rt_list), rti_list in zip(rt_dict.items() , rti_dict.values() ):
+    #----------------------------------------------------------
+    # Obtener half life del isotopo creado
+    producto = extraer_producto_datos_evaluados(reaction)
+    hl = get_half_life(producto)  # segundos
+    #print(reaction, hl)
+    if not hl:
+      #print(f"{producto} es un nucleo estable.")
+      continue
+
+    lam = (np.log(2)/hl) *3600
+    #----------------------------------------------------------
 
     Ni_list = []
     Np_list = []
@@ -31,15 +44,15 @@ def numero_nucleos(ti, tp, lam1, rho, A, rt_dict, rti_dict, vtar, Bi):
       rti *= 3600 #[horas⁻¹]
 
       # Factor de creación - primer orden.
-      creation_term = nt_0*(rti/ (lam1 - rt))
+      creation_term = nt_0*(rti/ (lam - rt))
 
       # Nucleos de i en el tiempo de creación - primer orden.
-      Ni = creation_term * (np.exp(-rt * ti) - np.exp(-lam1 * ti))
+      Ni = creation_term * (np.exp(-rt * ti) - np.exp(-lam * ti))
 
       # Nucleos de i en el tiempo de enfriamiento.
       Ni_max = Ni.max()
 
-      Np = Ni_max*np.exp(-lam1*tp)
+      Np = Ni_max*np.exp(-lam*tp)
 
       # Almacenar
       Ni_list.append(Ni)
@@ -50,13 +63,22 @@ def numero_nucleos(ti, tp, lam1, rho, A, rt_dict, rti_dict, vtar, Bi):
 
   return Ni_dict, Np_dict
 
-def actividad(lam1, Ni_dict, Np_dict):
+def actividad(Ni_dict, Np_dict):
 
   Ai_dict = {}
   Ap_dict = {}
 
   # Itera sobre cada reacción
   for (reaction, Ni_list), Np_list in zip(Ni_dict.items(), Np_dict.values()):
+    #----------------------------------------------------------
+    # Obtener half life del isotopo creado
+    producto = extraer_producto_datos_evaluados(reaction)
+    hl = get_half_life(producto)  # segundos
+    if not hl:
+      #print(f"{producto} es un nucleo estable.")
+      continue
+    lam = (np.log(2)/hl) *3600
+    #----------------------------------------------------------
 
     Ai_list = []
     Ap_list = []
@@ -65,8 +87,8 @@ def actividad(lam1, Ni_dict, Np_dict):
     for Ni, Np in zip(Ni_list, Np_list):
 
       # Calculo de la actividad
-      Ai = lam1/3600 * Ni
-      Ap = lam1/3600 * Np
+      Ai = lam/3600 * Ni
+      Ap = lam/3600 * Np
 
       # Almacenar
       Ai_list.append(Ai)

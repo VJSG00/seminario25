@@ -182,3 +182,41 @@ def get_inestable_isotope(A_p, Z_p):
     # Se obtienen y retornan los datos de la API usando get_isotope_data
     return get_isotope_data(nuclide)
 
+def get_half_life(nuclide:str)->np.float64:
+  """
+  Consulta en la API de la IAEA la vida media de un nuclide inestable.
+  """
+  #----------------------------------------------------------
+  # Obtener datos con request
+  url = "https://nds.iaea.org/relnsd/v1/data"
+  response_list = []
+
+  args = {"fields": "levels", "nuclides": nuclide}
+  r = requests.get(url, params=args)
+  response_list.append(r)
+  #----------------------------------------------------------
+  # Procesar contenido
+  content_list = []
+  for response in response_list:
+      decoded = response.content.decode('utf-8')
+      if len(decoded) >= 4:
+          content_list.append(decoded)
+
+  #----------------------------------------------------------
+  # Acceder a half life sec
+  for content in content_list:
+    csv_data = io.StringIO(content)
+    df = pd.read_csv(csv_data)
+
+  try:
+    half_life=df[df['energy']==0]['half_life_sec'][0]
+  except:
+    #print(f"No se ha consultado el nuclide: {nuclide}")
+    return None
+  #----------------------------------------------------------
+  # Comprobar si el nucleo es estable.
+  if np.isnan(half_life):
+    half_life = 0
+
+  #----------------------------------------------------------
+  return float(half_life)

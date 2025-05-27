@@ -57,7 +57,7 @@
   <h2>Selección de datos</h2>
   <p  style="margin-bottom:4;">Seleccione los datos que quiera analizar</p>
 
-  <form method="post" action="{% url 'rendimiento_resultado_target' %}">
+  <form method="post" action="{% url 'rendimiento_api_resultado' %}">
     {% csrf_token %}
     <!-- Campo oculto para la cache_key -->
     <input type="hidden" name="cache_key" value="{{ cache_key }}">
