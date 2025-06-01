@@ -117,6 +117,9 @@ def calcular_ratios_simplificado(datos_filtrados:list)-> list:
   datos_con_sigma = copy.deepcopy(datos_filtrados)
   resultado = {}
 
+  rt_prod_dict = {} #<-- almacenamiento necesario para facilitar los calculos.
+  isotopes = {}     #<-- Necesario para optimizar las consultas a BD.
+  
   for data in datos_con_sigma:
     if data['Energy'] == [] or data['Sig'] == []:
       continue
@@ -136,9 +139,18 @@ def calcular_ratios_simplificado(datos_filtrados:list)-> list:
       
       # Consultar en la base de datos:
       target = data['target']
-      target = get_nuclear_properties_by_symbol(target)
+      if target in isotopes.keys():                          #<-- Se hace asi para optimizar las consultas a BD
+        target = isotopes[target]                            #<-┘
+      else:
+        target = get_nuclear_properties_by_symbol(target)    #<-┘---- unica linea logicamente relevante.
+        isotopes[target.symbol] = target                     #<-┘
+
       product = data['product']
-      product = get_nuclear_properties_by_symbol(product)
+      if product and product in isotopes.keys():             #<-- validacion adicional porque product puede ser ''
+        product = isotopes[product]
+      elif product:
+        product = get_nuclear_properties_by_symbol(product)
+        isotopes[product.symbol] = product
       
       A_p = target.A
       Z_p = target.Z
@@ -155,16 +167,17 @@ def calcular_ratios_simplificado(datos_filtrados:list)-> list:
       vtar = S*trapezoid(y=1 / dEdx, x=E)
       K = (I_beam/(z_p*q_e))*(1/vtar)
       
-      tag = tag = (data['projectile'], data['target'])
+      tag = (data['projectile'], data['target'], data['product'])
       if not tag in resultado.keys():
         resultado[tag] = {'vtar': vtar, 'projectile': data['projectile'], 'target': target, 'product': product, 'E_max':E_beam}
-      
+
       if data['emission'] == 'NON':
         
+        tag_prod = (data['projectile'], data['target'])
         sigma_non = np.array(data['sigma'])
         rt_prod = K * trapezoid(y=sigma_non/dEdx, x=E)
         rt_prod *= 1e-24
-        resultado[tag]['rt_prod'] = rt_prod
+        rt_prod_dict[tag_prod] = rt_prod
       
       else: #<-- Si no es non, entonces es prod.
         resultado[tag]['reaction'] = data['reaction']
@@ -173,6 +186,9 @@ def calcular_ratios_simplificado(datos_filtrados:list)-> list:
         rti *= 1e-24
         resultado[tag]['rti'] = rti
 
-
+  # Debemos reasignar rt_prod a cada grupo de datos
+  for tag, data in resultado.items():
+    (proy, targ, prod) = tag
+    data['rt_prod'] = rt_prod_dict[proy, targ]
 
   return datos_con_sigma, resultado

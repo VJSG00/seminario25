@@ -144,15 +144,26 @@ def numero_nucleos_y_actividad_producto(resultado, ti, tp, half_life):
 
 def calcular_actividad_nucleos_simplificado(resultado):
   
+  #---------------------------------------------------------
+  # Valores ajustados
   na = 6.022e23
   Bi = 1
-
+  #---------------------------------------------------------
+  # Almacenamiento
   datos_entrantes = copy.deepcopy(resultado)
   resultado_final = {}
-
+  #---------------------------------------------------------
+  # tp 3 dias
   tp = np.linspace(0, 72, 72*3)
 
   for tag, data in datos_entrantes.items():
+    #------------------------------------------------------------------------------------------
+    # Validacion: Reaciones no elasticas no se analizan.
+    (proy, targ, prod) = tag
+    if not prod:
+      continue                #<--- Validacion para reacciones NON
+
+    #------------------------------------------------------------------------------------------ 
     # Acceder a los isotopos
     target = data['target']
     product = data['product']
@@ -165,17 +176,28 @@ def calcular_actividad_nucleos_simplificado(resultado):
 
     nt_0 = (na/A)*Bi*rho*vtar
     
-    # Variables del producto
-    half_life = product.half_life       #seg
-    Lambda = (np.log(2)/half_life)*3600 #1/h
-
+    #------------------------------------------------------------------------------------------
+    # Ajuste de unidades
     rt = data['rt_prod']*3600           #1/h
     rti = data['rti']*3600              #1/h
     
+    #------------------------------------------------------------------------------------------
+    # Tratamiento a isotopos estables e inestables
+    half_life = product.half_life       #seg
+
+    if not half_life:   #<-- Elemento estable.
+      Lambda = 0
+      t_max = None
+
+    else:               #<-- Elemento inestable.
+      Lambda = (np.log(2)/half_life)*3600 #1/h
+      t_max = (np.log(Lambda/rt))/(Lambda - rt) #1/h
+    
     creation_term = nt_0*(rti/ (Lambda - rt))
     
-    t_max = (np.log(Lambda/rt))/(Lambda - rt) #1/h
-    t = np.linspace(0, t_max, int(t_max*3))
+    #------------------------------------------------------------------------------------------
+    # Los tiempos ahora son 20 y 72.
+    t= np.linspace(0, 20, 20*3)
 
 
     Ni = creation_term *(np.exp(-rt * t)  -np.exp(-Lambda * t))

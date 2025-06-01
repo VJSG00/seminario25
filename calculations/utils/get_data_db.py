@@ -1,6 +1,33 @@
 from calculations.models import Isotope, Reaction
 import numpy as np
 
+# Puedes definir este diccionario globalmente en tu archivo de utilidades
+# o donde sea accesible para tu función consulta_simplificada.
+AGENCY_LIBRARIES = {
+    "IAEA": [
+        "IAEA-Medical",
+        "IAEA-Therapeutic",
+        "IAEA-Med-2019",
+    ],
+    "TENDL": [
+        "TENDL-2023",
+        # "TENDL-2021",
+        # "TENDL-2019",
+    ],
+    "JENDL": [
+        "JENDL-5",
+        "JENDL/ImPACT-18",
+    ],
+    "MENDL": [
+        "MENDL-2",
+    ],
+    "ENDF": [
+        "ENDF/B-VIII.0",
+        "ENDF/B-VII.1",
+    ],
+    # ... y cualquier otra agencia que necesites
+}
+
 ### FUNCION DE ASISTENCIA vvv #-----------------------------------------------
 
 # Necesito obtener los targets unicos
@@ -199,20 +226,47 @@ def consultar_reaccion_por_producto(product_value: str, projectile_value:str, ti
   #-----------------------------------------------
   return resultados
 
-def consulta_simplificada(isotope_value:str, libreria_preferida:str):
+def consulta_simplificada(isotope_value:str, libreria_preferida:str, tipo_busqueda:str):
     """
     TODO
     """
     
-    # Validacion
-    
-    # Filtrar las reacciones por target y projectile en la BD 'reactions'
-    reactions_qs = Reaction.objects.using('nuclear_data').filter(
-        product=isotope_value.upper(),
-        api="endf",
-        reference=libreria_preferida,
-    )
+    #-----------------------------------------------------------------------------
+    # Consulta segun el tipo de busqueda
+    if tipo_busqueda=="Prod":
+        # Filtrar las reacciones por target y projectile en la BD 'reactions'
+        reactions_qs = Reaction.objects.using('nuclear_data').filter(
+            product=isotope_value.upper(),
+            api="endf",
+            reference__in=AGENCY_LIBRARIES[libreria_preferida],
+        )
+    elif tipo_busqueda=="Targ":
+        # Filtrar las reacciones por target y projectile en la BD 'reactions'
+        reactions_qs = Reaction.objects.using('nuclear_data').filter(
+            target=isotope_value.upper(),
+            api="endf",
+            reference__in=AGENCY_LIBRARIES[libreria_preferida],
+        )
+    else:
+       raise ValueError("Tipo de busqueda no valido.")
+    #-----------------------------------------------------------------------------
+    # Buscar en TENDL si no se consigue nada.
+    if not reactions_qs.exists():
+        if tipo_busqueda == "Prod":
+            reactions_qs = Reaction.objects.using('nuclear_data').filter(
+                product=isotope_value.upper(),
+                api="endf",
+                reference="TENDL-2023", 
+            )
+        elif tipo_busqueda == "Targ":
+            reactions_qs = Reaction.objects.using('nuclear_data').filter(
+                target=isotope_value.upper(),
+                api="endf",
+                reference="TENDL-2023",
+            )
 
+    #-----------------------------------------------------------------------------
+    # Reestructurar los resultados.
     resultados = []
     for react in reactions_qs:
         # Se arma un diccionario con los campos de la reacción
@@ -221,7 +275,9 @@ def consulta_simplificada(isotope_value:str, libreria_preferida:str):
 
 
     #-----------------------------------------------
-    # Necesitamos los datos no elasticos.
+    # Necesitamos los datos no elasticos para la busqueda Prod
+    if tipo_busqueda=="Targ":
+       return resultados
 
     targets = obtener_targets_unicos(resultados)  #<-- Informacion necesaria
 
@@ -229,7 +285,7 @@ def consulta_simplificada(isotope_value:str, libreria_preferida:str):
         reactions_non = Reaction.objects.using('nuclear_data').filter(
             target=target,
             api='endf',
-            reference = libreria_preferida,
+            reference = "TENDL-2023",
             emission='NON',
         )
 

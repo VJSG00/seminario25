@@ -5,6 +5,7 @@ from django.core.cache import cache
 
 # Otros paquetes
 import time
+from calculations.utils.validaciones import validar_datos_API
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -53,6 +54,11 @@ def rendimiento_api_form(request):
         E_out *=1e6
         current *=1e-6
         Bi=1
+        
+        errores = validar_datos_API(isotope,current, E_in, E_out, ti, tp)
+        if errores:
+            mensaje_errores = "<br>".join(errores)
+            return HttpResponse(mensaje_errores, status=400)
 
 	    # Esto se tiene que saber por la API
         #isotope_parent_data = get_stable_isotope(isotope)

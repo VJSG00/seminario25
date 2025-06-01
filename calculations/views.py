@@ -16,9 +16,9 @@ import numpy as np
 # Funciones propias
 from calculations.utils.calculations.integral_ratios import calcular_ratios_simplificado, integral_ratios, calculo_ratio_producto
 from calculations.utils.data_cleaning.dividir_productos import dividir_productos, dividir_por_proyectil_y_target
-from calculations.utils.graphs.activity import grafico_actividad_producto, grafico_actividad_simplificado
+from calculations.utils.graphs.activity import grafico_actividad_producto, grafico_actividad_simplificado, graficos_tablas
 from calculations.utils.templates import formatear_numpy
-from calculations.utils.validaciones import validar_datos
+from calculations.utils.validaciones import existe_informacion, validar_datos_con_BD
 from .utils.graphs.data import grafico_actividad
 from calculations.utils.calculations.activity import calcular_actividad_nucleos_simplificado, numero_nucleos_y_actividad, numero_nucleos_y_actividad_producto
 from calculations.models import Isotope
@@ -41,8 +41,8 @@ def rendimiento_filtrar_datos(request):
     start_time = time.time()
 
     if request.method == "POST":
-        print("\nFormulario recibido\n")
-        print(f"request.POST: {request.POST}")
+        #print("\nFormulario recibido\n")
+        #print(f"request.POST: {request.POST}")
         
         # Get variables
         tipo_datos = str(request.POST.get('tipo_datos'))
@@ -62,7 +62,7 @@ def rendimiento_filtrar_datos(request):
 
         #-------------------------------------------------------------------------------
         # Validar datos entrantes
-        errores = validar_datos(isotope,current, E_in, E_out, ti, tp)
+        errores = validar_datos_con_BD(isotope,current, E_in, E_out, ti, tp)
         if errores:
             mensaje_errores = "<br>".join(errores)
             return HttpResponse(mensaje_errores, status=400)
@@ -574,15 +574,17 @@ def simplificada_resultado(request):
         isotope = (str(request.POST.get('isotopo'))).upper()
         
         #--------------------------------------------------------------------------
-        # Validaciones
+        # Validaciones: Saber si existe el isotopo en la BD
+        if not existe_informacion(isotope, libreria_preferida, tipo_busqueda):
+            return HttpResponse("No existe informacion de la reaccion solicitada.",400)
+
 
         #--------------------------------------------------------------------------
         # Consulta
-        if tipo_busqueda=="Prod":
-            try:
-                datos_obtenidos = consulta_simplificada(isotope, libreria_preferida)
-            except:
-                return HttpResponse("Hubo un error con el tipo de dato seleccionado",400)            
+        try:
+            datos_obtenidos = consulta_simplificada(isotope, libreria_preferida, tipo_busqueda)
+        except:
+            return HttpResponse("Hubo un error con el tipo de dato seleccionado",400)            
         #--------------------------------------------------------------------------
         # Cantidades fijas
         current = 100e-6   #microAmp
@@ -600,33 +602,37 @@ def simplificada_resultado(request):
 
         resultado_final = calcular_actividad_nucleos_simplificado(resultado)
 
-        plot_html = grafico_actividad_simplificado(resultado_final)
+        # plot_html = grafico_actividad_simplificado(resultado_final)
 
-        tabla = []
-        for v in resultado_final.values():
-            value = {
-                "reaccion":(v['reaction']),
-                "proyectil":v['projectile'],
-                #"blanco":v['target_symbol'],
-                "ratio_produccion":formatear_numpy(v['rti'],5,True),
-                "ratio_total":formatear_numpy(v['rt'],5,True),
-                "volumen_target":formatear_numpy(v['vtar'],4,False),
-                "actividad_max":formatear_numpy(v['A_max'],5,True,conversion_power=-6),
-                "nucleos_max":formatear_numpy(v['N_max'],5,True),
-                "tiempo_max": formatear_numpy(v['t_max'],2,True),
-                "energia_max": formatear_numpy(v['E_max'],2,True),
-                #aqui añadir mas cosas.
-            }
+        datos_presentar = graficos_tablas(resultado_final)
+        # tabla = []
+        # for v in resultado_final.values():
+        #     value = {
+        #         "reaccion":(v['reaction']),
+        #         "proyectil":v['projectile'],
+        #         #"blanco":v['target_symbol'],
+        #         "ratio_produccion":formatear_numpy(v['rti'],5,True),
+        #         "ratio_total":formatear_numpy(v['rt'],5,True),
+        #         "volumen_target":formatear_numpy(v['vtar'],4,False),
+        #         "actividad_max":formatear_numpy(v['A_max'],5,True,conversion_power=-6),
+        #         "nucleos_max":formatear_numpy(v['N_max'],5,True),
+        #         "tiempo_max": formatear_numpy(v['t_max'],2,True),
+        #         "energia_max": formatear_numpy(v['E_max'],2,True),
+        #         #aqui añadir mas cosas.
+        #     }
 
-            tabla.append(value)    
+        #     tabla.append(value)    
         context = {
             'isotope': isotope,
-            'plot_html':plot_html,
-            'tabla':tabla,
+            'datos_presentar': datos_presentar,
         }
+        return render(request, 'calculations/simplificado_resultados.html', context)
 
+        #--------------------------------------------------------------------------
+        # DEBUG
+        #--------------------------------------------------------------------------
         # try:
-        #     debugear = resultado_final
+        #     debugear = tablas
         #     # json.dumps con indent=4 hace que el JSON sea legible
         #     # default=str es crucial para que json.dumps pueda manejar objetos no serializables como np.float64
         #     pretty_debug_data = json.dumps(debugear, indent=4, default=str)
@@ -637,8 +643,7 @@ def simplificada_resultado(request):
         #     'debug_name': "datos_obtenidos",
         #     'debug_content': pretty_debug_data,
         # }
-        
-        #return render(request, 'calculations/debug.html', context)
-        return render(request, 'calculations/simplificado_resultados.html', context)
+        # return render(request, 'calculations/debug.html', context)
+    
     else: 
         return redirect(busqueda_simplificada)

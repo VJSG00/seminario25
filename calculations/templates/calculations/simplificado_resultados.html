@@ -49,53 +49,58 @@
 {% block mainContent %} 
     <div class="container">
         <h2>Resultados del Rendimiento</h2>
-        <div class="graph-container">
-            {{ plot_html|safe }}
-        </div>
-        <div class="timer">
+       
+       {% for datos in datos_presentar %} 
+            <div class="graph-container">
+                {{ datos.plot|safe }}
+            </div>
+            <div style="text-align: left; padding: 2vh;">
+                <p><strong>Isótopo:</strong> {{ isotope }}</p>
+            </div>
+
+            {% if datos.tabla %}
+            <div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Reaccion</th>
+                            <th>Proyectil</th>
+                            <th>Tiempo max.</th>
+                            <th>Energia optima</th>
+                            <th>R. parcial[s^-1]</th>
+                            <th>R. total[s^-1]</th>
+                            <th>Vol. target[cm^3]</th>
+                            <th>Actividad EOI[Mbq]</th>
+                            <th>#isotopos EOI</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in datos.tabla %}
+                        <tr>
+                            <td>{{ item.reaccion }}</td>
+                            <td>{{ item.proyectil }}</td>
+                            <td>{{ item.tiempo_max }}</td>
+                            <td>{{ item.energia_max }}</td>
+                            <td>{{ item.ratio_produccion }}</td>
+                            <td>{{ item.ratio_total }}</td>
+                            <td>{{ item.volumen_target }}</td>
+                            <td>{{ item.actividad_max }}</td>
+                            <td>{{ item.nucleos_max }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No hay datos disponibles para mostrar.</p>
+            {% endif %}
+
+       {% endfor %}
+
+        {% comment %} <div class="timer">
             Tiempo de procesamiento: {{ elapsed_time | floatformat:2 }} segundos
-        </div>
-        <div style="text-align: left; padding: 2vh;">
-            <p><strong>Isótopo:</strong> {{ isotope }}</p>
-        </div>
-
-        {% if tabla %}
-        <div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Reaccion</th>
-                        <th>Proyectil</th>
-                        <th>Tiempo max.</th>
-                        <th>Energia optima</th>
-                        <th>R. parcial[s^-1]</th>
-                        <th>R. total[s^-1]</th>
-                        <th>Vol. target[cm^3]</th>
-                        <th>Actividad EOI[Mbq]</th>
-                        <th>#isotopos EOI</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in tabla %}
-                    <tr>
-                        <td>{{ item.reaccion }}</td>
-                        <td>{{ item.proyectil }}</td>
-                        <td>{{ item.tiempo_max }}</td>
-                        <td>{{ item.energia_max }}</td>
-                        <td>{{ item.ratio_produccion }}</td>
-                        <td>{{ item.ratio_total }}</td>
-                        <td>{{ item.volumen_target }}</td>
-                        <td>{{ item.actividad_max }}</td>
-                        <td>{{ item.nucleos_max }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>No hay datos disponibles para mostrar.</p>
-        {% endif %}
+        </div> {% endcomment %}
 
         <a href="{% url 'simplificado_ingresar' %}" style="display: block; margin-top: 2vh;">Volver al formulario</a>
     </div>
