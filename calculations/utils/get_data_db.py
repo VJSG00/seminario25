@@ -199,3 +199,45 @@ def consultar_reaccion_por_producto(product_value: str, projectile_value:str, ti
   #-----------------------------------------------
   return resultados
 
+def consulta_simplificada(isotope_value:str, libreria_preferida:str):
+    """
+    TODO
+    """
+    
+    # Validacion
+    
+    # Filtrar las reacciones por target y projectile en la BD 'reactions'
+    reactions_qs = Reaction.objects.using('nuclear_data').filter(
+        product=isotope_value.upper(),
+        api="endf",
+        reference=libreria_preferida,
+    )
+
+    resultados = []
+    for react in reactions_qs:
+        # Se arma un diccionario con los campos de la reacción
+        react_dict = extraer_informacion_consultada(react)
+        resultados.append(react_dict)
+
+
+    #-----------------------------------------------
+    # Necesitamos los datos no elasticos.
+
+    targets = obtener_targets_unicos(resultados)  #<-- Informacion necesaria
+
+    for target in targets:
+        reactions_non = Reaction.objects.using('nuclear_data').filter(
+            target=target,
+            api='endf',
+            reference = libreria_preferida,
+            emission='NON',
+        )
+
+        for react in reactions_non:
+            react_dict = extraer_informacion_consultada(react)
+            resultados.append(react_dict)
+    #-----------------------------------------------
+
+
+
+    return resultados

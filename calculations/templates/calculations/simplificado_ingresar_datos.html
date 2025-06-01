@@ -1,0 +1,125 @@
+{% extends 'presentation/assets/main.html' %}
+
+{% block customStyle %} 
+        body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            background: var(--color-container-bg);
+            color: var(--color-text-light);
+            padding: 2vh;
+            margin: 2vh auto;
+            width: 80%;
+            border-radius: 2vh;
+            box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.2);
+        }
+        .form-container {
+            background: transparent;
+            border: 1px solid var(--color-accent);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            justify-content: center;
+            gap: 2vw;
+            padding: 2vh;
+            border-radius: 2vh;
+            box-shadow: 0 0.4vh 0.6vh rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--color-accent-dark);
+            padding: 1vh;
+            border-radius: 1vh;
+        }
+        label {
+            font-size: 2.2vh;
+            margin-right: 1vw;
+        }
+        input {
+            width: 120px;
+            padding: 0.8vh;
+            border: 1px solid #333;
+            border-radius: 1vh;
+            text-align: center;
+        }
+        .ratio-input {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .ratio-input label {
+            display: inline-block;
+            margin-right: 5px;
+            font-size: 14px;
+            vertical-align: middle;
+            padding: 2px 4px;
+            cursor: pointer;
+        }
+
+        .ratio-input input[type="radio"] {
+            vertical-align: middle;
+            margin-right: 3px;
+            width: 15px;
+            height: 15px;
+        }
+        .submit-button {
+            background: var(--gradient-linear);
+            margin-top: 2vh;
+            padding: 1vh 2vw;
+            font-size: 1.8vh;
+            color: white;
+            border: none;
+            border-radius: 1vh;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.2s;
+        }
+        .submit-button:hover {
+            transform: scale(1.10);
+        }
+{% endblock %}
+
+{% block mainContent %} 
+<div class="container">
+    <h2>Busqueda simplificada</h2>
+    <form method="post" action="{% url 'simplificado_resultado' %}">
+        {% csrf_token %}
+
+        <div class="form-container">
+            
+            <div class="form-group">
+                <label>Busqueda:</label>
+                <div class="ratio-input">
+                    <label for="busqueda">
+                        <input type="radio" id="busqueda_target" name="tipo_busqueda" value="Targ" required>Target
+                    </label>
+                    <label for="datos_Ex">
+                        <input type="radio" id="busqueda_producto" name="tipo_busqueda" value="Prod">Producto
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="isotopo">Isótopo:</label>
+                <input type="text" id="isotopo" name="isotopo" placeholder="Ej. Ni64" required>
+            </div>
+
+            <div class="form-group">
+                <label for="isotopo">Libreria Preferida:</label>
+                <select name="libreria" id="libreria">
+                    <option value="TENDL-2023">TENDL-2023</option>
+                    {% comment %} <option value="iaea">IAEA</option>
+                    <option value="jendl">JENDL</option> {% endcomment %}
+                </select>
+    
+            </div>
+
+            {% comment %} Aqui elimine energias, proyectil, tiempos, etc. {% endcomment %}
+        </div>
+        <button type="submit" class="submit-button">Calcular</button>
+</div>
+  
+{% endblock %}

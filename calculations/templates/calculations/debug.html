@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depuración de Variables</title>
+    <style>
+        body {
+            font-family: monospace;
+            white-space: pre-wrap; /* Mantiene saltos de línea y espacios */
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+        h1 {
+            color: #4CAF50; /* Un color verde para destacar */
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #2b2b2b;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto; /* Para scroll horizontal si el contenido es muy largo */
+        }
+        .back-link {
+            display: block;
+            margin-top: 30px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Depuración: {{ debug_name }}</h1>
+    <pre>{{ debug_content }}</pre>
+    <a href="javascript:history.back()" class="back-link">Volver a la página anterior</a>
+</body>
+</html>

@@ -77,4 +77,44 @@ def filtrar_datos(datos_interpolados:list, E_back:float, E_beam:float):
   print(f"datos filtrados")
   return data_output
 
+def calculo_energias_maximas(datos_interpolados:list):
+  """
+  TODO
+  """
+  datos_con_energias = copy.deepcopy(datos_interpolados)
 
+  for data in datos_con_energias:
+    energy = np.array(data['Energy'])
+    sig = np.array(data['Sig'])
+
+    # indice sig maximo
+    max_sig_index = np.argmax(sig)
+
+    # Energia y seccion eficaz maxima
+    #max_sig_value = sig[max_sig_index]
+    energy_at_max_sig = energy[max_sig_index]
+
+    data['Energia_max'] = energy_at_max_sig
+
+  return datos_con_energias
+
+def filtrar_datos_con_energias(datos_interpolados:list, E_back:float):
+  """
+  TODO
+  """
+  data_output = copy.deepcopy(datos_interpolados)
+
+  for data in data_output:
+    E = np.array(data["Energy"])
+    Sig = np.array(data["Sig"])
+    E_beam = data["Energia_max"]
+
+    mask = (E >= E_back) & (E <= E_beam)
+    E_filt = E[mask]
+    Sig_filt = Sig[mask]
+
+    data['Energy'] = E_filt.tolist()
+    data['Sig'] = Sig_filt.tolist()
+
+  print(f"datos filtrados")
+  return data_output

@@ -1,4 +1,5 @@
 from calculations.utils.calculations.bethe_bloch import bethe_bloch
+from calculations.utils.calculations.sigma_integral import calculo_sigma
 from calculations.utils.get_data_db import get_nuclear_properties_by_symbol
 from ..elementos import densidad
 from ..diccionario_de_cargas import diccionario_de_cargas, diccionario_de_masa_equivalente
@@ -108,3 +109,70 @@ def calculo_ratio_producto(data_tag_test, I_beam, E_beam, E_back):
         resultado[tag]['rti'] = rti
   
   return resultado
+
+def calcular_ratios_simplificado(datos_filtrados:list)-> list:
+  """
+  TODO
+  """
+  datos_con_sigma = copy.deepcopy(datos_filtrados)
+  resultado = {}
+
+  for data in datos_con_sigma:
+    if data['Energy'] == [] or data['Sig'] == []:
+      continue
+    
+    else:
+      dato_guardar = copy.deepcopy(data)  #<-- Se hace asi para arreglar un bug.
+      
+      N=30
+      E_back = 0.1e6
+      I_beam = 100e-6
+      q_e = 1.602e-19
+
+      E_beam = data["Energia_max"]
+      E = np.linspace(E_back, E_beam, N)
+
+      data['sigma'] = calculo_sigma(data, E).tolist()
+      
+      # Consultar en la base de datos:
+      target = data['target']
+      target = get_nuclear_properties_by_symbol(target)
+      product = data['product']
+      product = get_nuclear_properties_by_symbol(product)
+      
+      A_p = target.A
+      Z_p = target.Z
+      rho_p = densidad[Z_p]
+      
+      projectile = data['projectile']
+      I = Z_p*(9.76 + 58.8*(Z_p**(-1.19)))
+      S= 1.0
+
+      m_0 = diccionario_de_masa_equivalente[projectile]
+      z_p = diccionario_de_cargas[projectile]
+      dEdx = np.array([bethe_bloch(e, I, rho_p, Z_p, A_p, z_p, m_0) for e in E ])
+      
+      vtar = S*trapezoid(y=1 / dEdx, x=E)
+      K = (I_beam/(z_p*q_e))*(1/vtar)
+      
+      tag = tag = (data['projectile'], data['target'])
+      if not tag in resultado.keys():
+        resultado[tag] = {'vtar': vtar, 'projectile': data['projectile'], 'target': target, 'product': product, 'E_max':E_beam}
+      
+      if data['emission'] == 'NON':
+        
+        sigma_non = np.array(data['sigma'])
+        rt_prod = K * trapezoid(y=sigma_non/dEdx, x=E)
+        rt_prod *= 1e-24
+        resultado[tag]['rt_prod'] = rt_prod
+      
+      else: #<-- Si no es non, entonces es prod.
+        resultado[tag]['reaction'] = data['reaction']
+        sigma = np.array(data['sigma'])
+        rti = K * trapezoid(y=sigma/dEdx , x=E)
+        rti *= 1e-24
+        resultado[tag]['rti'] = rti
+
+
+
+  return datos_con_sigma, resultado

@@ -57,12 +57,6 @@
         </div>
         <div style="text-align: left; padding: 2vh;">
             <p><strong>Isótopo:</strong> {{ isotope }}</p>
-            <p><strong>Proyectil:</strong> {{ projectile }}</p>
-            <p><strong>Corriente:</strong> {{ current }} μA</p>
-            <p><strong>Energía deEntrada:</strong> {{ E_in }} eV</p>
-            <p><strong>Energía de Salida:</strong> {{ E_out }} eV</p>
-            <p><strong>Tiempo de Irradiación:</strong> {{ ti }} horas</p>
-            <p><strong>Tiempo de Enfriamiento:</strong> {{ tc }} horas</p>
         </div>
 
         {% if tabla %}
@@ -72,6 +66,8 @@
                     <tr>
                         <th>Reaccion</th>
                         <th>Proyectil</th>
+                        <th>Tiempo max.</th>
+                        <th>Energia optima</th>
                         <th>R. parcial[s^-1]</th>
                         <th>R. total[s^-1]</th>
                         <th>Vol. target[cm^3]</th>
@@ -85,6 +81,8 @@
                     <tr>
                         <td>{{ item.reaccion }}</td>
                         <td>{{ item.proyectil }}</td>
+                        <td>{{ item.tiempo_max }}</td>
+                        <td>{{ item.energia_max }}</td>
                         <td>{{ item.ratio_produccion }}</td>
                         <td>{{ item.ratio_total }}</td>
                         <td>{{ item.volumen_target }}</td>
@@ -99,6 +97,6 @@
         <p>No hay datos disponibles para mostrar.</p>
         {% endif %}
 
-        <a href="{% url 'rendimiento_ingresar' %}" style="display: block; margin-top: 2vh;">Volver al formulario</a>
+        <a href="{% url 'simplificado_ingresar' %}" style="display: block; margin-top: 2vh;">Volver al formulario</a>
     </div>
 {% endblock %}

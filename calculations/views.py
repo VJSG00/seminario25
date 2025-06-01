@@ -1,31 +1,34 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.core.cache import cache
+from django.core.paginator import Paginator # Para tablas html en el template.
 
 # Otros paquetes
 import time
 import uuid
 from collections import defaultdict
 import copy
-from calculations.utils.calculations.integral_ratios import integral_ratios, calculo_ratio_producto
-from calculations.utils.data_cleaning.dividir_productos import dividir_productos, dividir_por_proyectil_y_target
-from calculations.utils.graphs.activity import grafico_actividad_producto
-from calculations.utils.validaciones import validar_datos
+import json
 from scipy.integrate import trapezoid
-
 import numpy as np
 
 
 # Funciones propias
+from calculations.utils.calculations.integral_ratios import calcular_ratios_simplificado, integral_ratios, calculo_ratio_producto
+from calculations.utils.data_cleaning.dividir_productos import dividir_productos, dividir_por_proyectil_y_target
+from calculations.utils.graphs.activity import grafico_actividad_producto, grafico_actividad_simplificado
+from calculations.utils.templates import formatear_numpy
+from calculations.utils.validaciones import validar_datos
 from .utils.graphs.data import grafico_actividad
-from calculations.utils.calculations.activity import numero_nucleos_y_actividad, numero_nucleos_y_actividad_producto
+from calculations.utils.calculations.activity import calcular_actividad_nucleos_simplificado, numero_nucleos_y_actividad, numero_nucleos_y_actividad_producto
 from calculations.models import Isotope
 from .utils.elementos import densidad
 from .utils.diccionario_de_cargas import diccionario_de_cargas, diccionario_de_masa_equivalente
-from .utils.get_data_db import get_nuclear_properties_by_symbol, get_reactions_by_target_projectile, consultar_reaccion_por_producto, obtener_targets_unicos, obtener_proyectiles_unicos
+# Funciones complejas
+from .utils.get_data_db import consulta_simplificada, get_nuclear_properties_by_symbol, get_reactions_by_target_projectile, consultar_reaccion_por_producto, obtener_targets_unicos, obtener_proyectiles_unicos
 from calculations.utils.calculations.bethe_bloch import bethe_bloch
 from calculations.utils.calculations.sigma_integral import calculo_sigma, filtrar_y_calcular_sigma
-from calculations.utils.data_cleaning.procesar_datos import filtrar_datos, interpolar_datos, procesar_datos
+from calculations.utils.data_cleaning.procesar_datos import calculo_energias_maximas, filtrar_datos, filtrar_datos_con_energias, interpolar_datos, procesar_datos
 from calculations.utils.graphs.evaluated import grafico_secciones_evaluadas
 from calculations.utils.graphs.experimental import grafico_secciones_experimentales
 
@@ -365,13 +368,32 @@ def rendimiento_mostrar_resultados(request):
         #print(len(datos_finales))
         #print(f"\ndatos finales: {datos_finales}\n")
 
-
+        #--------------------------------------------------------------------------------
+        # Informacion a enviar:
+        
+        # Grafico 
         plot_html = grafico_actividad(ti, tp, datos_finales, products)
 
         # Tiempo de carga:
         elapsed_time = time.time() - start_time
 
-        # Contexto para resultados en render
+        # # Tabular los datos:
+        # tabla = []
+        # for v in datos_finales.values():
+        #     value = {
+        #         "reaccion":v['reaction'],
+        #         "proyectil":v['projectile'],
+        #         "blanco":v['target_symbol'],
+        #         #aqui añadir mas cosas.
+        #     }
+
+        #     tabla.append(value)
+
+        # paginator = Paginator(paginar, 5)  # Mostrar 5 elementos por página
+
+
+        #--------------------------------------------------------------------------------
+        # Contexto para resultados
         context = {
             'isotope': isotope,
             'projectile': projectile,
@@ -382,7 +404,7 @@ def rendimiento_mostrar_resultados(request):
             'ti': ti,
             'tc': tp,
             'plot_html': plot_html,
-            'elapsed_time': elapsed_time
+            'elapsed_time': elapsed_time,
         }
 
         return render(request, 'calculations/rendimiento_resultado_target.html', context)
@@ -494,7 +516,25 @@ def rendimiento_resultados_isotopo(request):
         
         half_life= isotopo.half_life
         datos_finales = numero_nucleos_y_actividad_producto(datos_con_ratios, ti, tp, half_life)
+        
+        #--------------------------------------------------------------------------------
+        # Tabular los datos:
+        tabla = []
+        for v in datos_finales.values():
+            value = {
+                "reaccion":(v['reaction']),
+                "proyectil":v['projectile'],
+                #"blanco":v['target_symbol'],
+                "ratio_produccion":formatear_numpy(v['rti'],5,True),
+                "ratio_total":formatear_numpy(v['rt'],5,True),
+                "volumen_target":formatear_numpy(v['vtar'],4,False),
+                "actividad_max":formatear_numpy(v['A_max'],5,True,conversion_power=-6),
+                "nucleos_max":formatear_numpy(v['N_max'],5,True),
+                #aqui añadir mas cosas.
+            }
 
+            tabla.append(value)    
+        
         plot_html = grafico_actividad_producto(datos_finales, ti, tp)
 
         # Tiempo de carga:
@@ -504,13 +544,14 @@ def rendimiento_resultados_isotopo(request):
         context = {
             'isotope': isotope,
             'projectile': projectile,
-            'current': current*1e6,
-            'E_in': E_in,
+            'current': formatear_numpy(current*1e6,3,False),
+            'E_in': formatear_numpy(E_in,3,False),
             'E_out': E_out,
             'ti': ti,
             'tc': tp,
             'plot_html': plot_html,
-            'elapsed_time': elapsed_time
+            'elapsed_time': elapsed_time,
+            'tabla':tabla,
         }
 
         return render(request, 'calculations/rendimiento_resultado_producto.html', context)
@@ -518,3 +559,86 @@ def rendimiento_resultados_isotopo(request):
     else:
 
         return redirect(rendimiento_ingresar_datos)
+
+def busqueda_simplificada(request):
+    return render(request, "calculations/simplificado_ingresar_datos.html", {})
+
+def simplificada_resultado(request):
+    if request.method == "POST":
+        print("\nFormulario recibido\n")
+        print(f"request.POST: {request.POST}")        
+        #--------------------------------------------------------------------------
+        # Recuperar datos del formulario:
+        libreria_preferida = str(request.POST.get('libreria'))
+        tipo_busqueda = str(request.POST.get('tipo_busqueda'))
+        isotope = (str(request.POST.get('isotopo'))).upper()
+        
+        #--------------------------------------------------------------------------
+        # Validaciones
+
+        #--------------------------------------------------------------------------
+        # Consulta
+        if tipo_busqueda=="Prod":
+            try:
+                datos_obtenidos = consulta_simplificada(isotope, libreria_preferida)
+            except:
+                return HttpResponse("Hubo un error con el tipo de dato seleccionado",400)            
+        #--------------------------------------------------------------------------
+        # Cantidades fijas
+        current = 100e-6   #microAmp
+        E_out = 0.1e6   #mev
+
+        # Procesamiento
+        datos_procesados = procesar_datos(datos_obtenidos)
+        datos_interpolados = interpolar_datos(datos_procesados, num_puntos_adicionales=500 )
+
+        datos_con_energias = calculo_energias_maximas(datos_interpolados)
+        
+        datos_filtrados = filtrar_datos_con_energias(datos_con_energias, E_out)
+
+        datos_con_sigma, resultado = calcular_ratios_simplificado(datos_filtrados)
+
+        resultado_final = calcular_actividad_nucleos_simplificado(resultado)
+
+        plot_html = grafico_actividad_simplificado(resultado_final)
+
+        tabla = []
+        for v in resultado_final.values():
+            value = {
+                "reaccion":(v['reaction']),
+                "proyectil":v['projectile'],
+                #"blanco":v['target_symbol'],
+                "ratio_produccion":formatear_numpy(v['rti'],5,True),
+                "ratio_total":formatear_numpy(v['rt'],5,True),
+                "volumen_target":formatear_numpy(v['vtar'],4,False),
+                "actividad_max":formatear_numpy(v['A_max'],5,True,conversion_power=-6),
+                "nucleos_max":formatear_numpy(v['N_max'],5,True),
+                "tiempo_max": formatear_numpy(v['t_max'],2,True),
+                "energia_max": formatear_numpy(v['E_max'],2,True),
+                #aqui añadir mas cosas.
+            }
+
+            tabla.append(value)    
+        context = {
+            'isotope': isotope,
+            'plot_html':plot_html,
+            'tabla':tabla,
+        }
+
+        # try:
+        #     debugear = resultado_final
+        #     # json.dumps con indent=4 hace que el JSON sea legible
+        #     # default=str es crucial para que json.dumps pueda manejar objetos no serializables como np.float64
+        #     pretty_debug_data = json.dumps(debugear, indent=4, default=str)
+        # except (TypeError, ValueError):
+        #     pretty_debug_data = str(debugear) # Si no se puede convertir a JSON, al menos a string
+
+        # context = {
+        #     'debug_name': "datos_obtenidos",
+        #     'debug_content': pretty_debug_data,
+        # }
+        
+        #return render(request, 'calculations/debug.html', context)
+        return render(request, 'calculations/simplificado_resultados.html', context)
+    else: 
+        return redirect(busqueda_simplificada)

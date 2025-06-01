@@ -23,7 +23,7 @@
     }
     .options {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         justify-content:center;
         justify-items: center;
         gap: 15px;
@@ -60,6 +60,11 @@
 <div class="container">
     <h2>Seleccione un modo</h2>
     <div class="options">
+        <button type="button" class="option"
+                onclick="window.location.href='{% url 'simplificado_ingresar' %}'">
+            <span class="button-heading">Busqueda simplificada</span>
+            <span class="button-subheading">Rapido y ajusta valores a los optimos</span>
+        </button>
         <button type="button" class="option"
                 onclick="window.location.href='{% url 'rendimiento_ingresar' %}'">
             <span class="button-heading">Base de Datos</span>

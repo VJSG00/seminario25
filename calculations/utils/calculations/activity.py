@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+from ..elementos import densidad
 
 # Función de irradiación
 def numero_nucleos_y_actividad(datos_productos: dict, products: list, A:int ,ti:int, tp:int, rho:float, vtar:float , Bi:float):
@@ -120,17 +121,88 @@ def numero_nucleos_y_actividad_producto(resultado, ti, tp, half_life):
 
     Ai = (Lambda/3600) * Ni    # 1/seg
     Ap = (Lambda/3600) * Np
+    Ai_max = Ai.max()
 
     resultado_final[tag] = {
         'target_symbol': data['target_symbol'],
         'projectile': data['projectile'],
         'reaction': data['reaction'],
+        'rt':data['rt_prod'],
+        'rti':data['rti'],
+        'vtar':data['vtar'],
         'Ai': Ai,
         'Ap': Ap,
+        'A_max':Ai_max,
         'Ni': Ni,
         'Np': Np,
+        'N_max':Ni_max,
         'ti': ti,
         'tp': tp,
+    }
+
+  return resultado_final
+
+def calcular_actividad_nucleos_simplificado(resultado):
+  
+  na = 6.022e23
+  Bi = 1
+
+  datos_entrantes = copy.deepcopy(resultado)
+  resultado_final = {}
+
+  tp = np.linspace(0, 72, 72*3)
+
+  for tag, data in datos_entrantes.items():
+    # Acceder a los isotopos
+    target = data['target']
+    product = data['product']
+
+    # Variables del target
+    A = target.A
+    Z = target.Z
+    rho = densidad[Z]
+    vtar = data['vtar']
+
+    nt_0 = (na/A)*Bi*rho*vtar
+    
+    # Variables del producto
+    half_life = product.half_life       #seg
+    Lambda = (np.log(2)/half_life)*3600 #1/h
+
+    rt = data['rt_prod']*3600           #1/h
+    rti = data['rti']*3600              #1/h
+    
+    creation_term = nt_0*(rti/ (Lambda - rt))
+    
+    t_max = (np.log(Lambda/rt))/(Lambda - rt) #1/h
+    t = np.linspace(0, t_max, int(t_max*3))
+
+
+    Ni = creation_term *(np.exp(-rt * t)  -np.exp(-Lambda * t))
+    Ni_max = Ni.max()
+    Np = Ni_max*np.exp(-Lambda*tp)
+
+    Ai = (Lambda/3600) * Ni    # 1/seg
+    Ap = (Lambda/3600) * Np
+    Ai_max = Ai.max()
+
+    resultado_final[tag] = {
+    'target_symbol': target.symbol,
+    'projectile': product.symbol,
+    'reaction': data['reaction'],
+    'N_max':Ni_max,
+    't_max': t_max,
+    'rt':data['rt_prod'],
+    'rti':data['rti'],
+    'vtar':data['vtar'],
+    'A_max':Ai_max,
+    'E_max': data['E_max'],
+    'Ai': Ai,
+    'Ap': Ap,
+    'Ni': Ni,
+    'Np': Np,
+    't': t,
+    'tp': tp,
     }
 
   return resultado_final

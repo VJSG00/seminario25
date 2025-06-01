@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from calculations.views import rendimiento_ingresar_datos, rendimiento_filtrar_datos, rendimiento_mostrar_resultados, rendimiento_resultados_isotopo
+from calculations.views import rendimiento_ingresar_datos, rendimiento_filtrar_datos, rendimiento_mostrar_resultados, rendimiento_resultados_isotopo, busqueda_simplificada, simplificada_resultado
 from presentation.views import index, rendimiento_api, rendimiento_api_form, rendimiento_api_resultado
 
 
@@ -32,5 +32,8 @@ urlpatterns = [
     path('rendimiento/api', rendimiento_api,name="rendimiento_api"),
     path('rendimiento/api/form', rendimiento_api_form, name="rendimiento_api_form" ),
     path('rendimiento/api/resultado', rendimiento_api_resultado, name="rendimiento_api_resultado"),
+
+    path('rendimiento/simplificado', busqueda_simplificada, name="simplificado_ingresar"),
+    path('rendimiento/simplificado/resultado', simplificada_resultado, name="simplificado_resultado"), 
 
 ]
