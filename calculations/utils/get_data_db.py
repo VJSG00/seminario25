@@ -277,23 +277,33 @@ def consulta_simplificada(isotope_value:str, libreria_preferida:str, tipo_busque
     #-----------------------------------------------
     # Necesitamos los datos no elasticos para la busqueda Prod
     if tipo_busqueda=="Targ":
-       return resultados
-
-    targets = obtener_targets_unicos(resultados)  #<-- Informacion necesaria
-
-    for target in targets:
         reactions_non = Reaction.objects.using('nuclear_data').filter(
-            target=target,
-            api='endf',
-            reference = "TENDL-2023",
-            emission='NON',
-        )
-
+                target=isotope_value,
+                api='endf',
+                reference = "TENDL-2023",
+                emission='NON',
+            )
+        
         for react in reactions_non:
             react_dict = extraer_informacion_consultada(react)
             resultados.append(react_dict)
-    #-----------------------------------------------
 
+
+    elif tipo_busqueda == "Prod":
+        targets = obtener_targets_unicos(resultados)  #<-- Informacion necesaria
+
+        for target in targets:
+            reactions_non = Reaction.objects.using('nuclear_data').filter(
+                target=target,
+                api='endf',
+                reference = "TENDL-2023",
+                emission='NON',
+            )
+
+            for react in reactions_non:
+                react_dict = extraer_informacion_consultada(react)
+                resultados.append(react_dict)
+        #-----------------------------------------------
 
 
     return resultados
