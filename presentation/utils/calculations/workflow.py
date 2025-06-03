@@ -21,14 +21,14 @@ def workflow_data(list_df, E_back, E_beam, I, rho, Z, A):
     dEdx = np.array([bethe_bloch(e, I, rho, Z, A) for e in E])
 
     # Para cada conjunto de datos, funcionalizamos su sección eficaz
-    #try:
-    list_of_sigma_in = []
-    for i in range(len(energias)):
-      sigma_in = np.interp(E, energias[i], secciones[i])
-      list_of_sigma_in.append(sigma_in)
-    return list_of_sigma_in, dEdx, E
-    #except(ValueError):
-      #return None, None, None
+    try:
+      list_of_sigma_in = []
+      for i in range(len(energias)):
+        sigma_in = np.interp(E, energias[i], secciones[i])
+        list_of_sigma_in.append(sigma_in)
+      return list_of_sigma_in, dEdx, E
+    except(ValueError):
+      return None, None, None
 
 def workflow_no_elastic_data(list_df, E_back, E_beam):
 
