@@ -17,6 +17,7 @@ def numero_nucleos(ti, tp, rho, A, rt_dict, rti_dict, vtar, Bi):
 
   Ni_dict = {}
   Np_dict = {}
+  t_max_dict = {}
 
   # Itera sobre cada conjunto de reacciones
   for (reaction, rt_list), rti_list in zip(rt_dict.items() , rti_dict.values() ):
@@ -43,6 +44,9 @@ def numero_nucleos(ti, tp, rho, A, rt_dict, rti_dict, vtar, Bi):
       rt *= 3600  #[horas⁻¹]
       rti *= 3600 #[horas⁻¹]
 
+      # Tiempo maximo de irradiacion
+      t_max = (np.log(lam/rt))/(lam - rt)
+      
       # Factor de creación - primer orden.
       creation_term = nt_0*(rti/ (lam - rt))
 
@@ -57,11 +61,12 @@ def numero_nucleos(ti, tp, rho, A, rt_dict, rti_dict, vtar, Bi):
       # Almacenar
       Ni_list.append(Ni)
       Np_list.append(Np)
+      t_max_dict[reaction] = t_max
 
     Ni_dict[reaction] = Ni_list
     Np_dict[reaction] = Np_list
 
-  return Ni_dict, Np_dict
+  return Ni_dict, Np_dict, t_max_dict
 
 def actividad(Ni_dict, Np_dict):
 

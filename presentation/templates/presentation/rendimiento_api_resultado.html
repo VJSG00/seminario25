@@ -17,7 +17,33 @@
         .graph-container {
             margin: 2vh 0;
         }
-{% endblock %}
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: white;
+            color: black;
+            text-transform: uppercase;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .data-table tr:hover {
+            background-color: #e9ecef;
+        }
+        {% endblock %}
 
 {% block mainContent %} 
     <div class="container">
@@ -32,12 +58,43 @@
             <p><strong>Isótopo:</strong> {{ isotope }}</p>
             <p><strong>Proyectil:</strong> {{ projectile }}</p>
             <p><strong>Corriente:</strong> {{ current }} μA</p>
-            <p><strong>Energía deEntrada:</strong> {{ E_in }} eV</p>
-            <p><strong>Energía de Salida:</strong> {{ E_out }} eV</p>
-            <p><strong>Tiempo de Irradiación:</strong> {{ ti }} horas</p>
-            <p><strong>Tiempo de Enfriamiento:</strong> {{ tc }} horas</p>
-            <p><strong>Volumen del target:</strong> {{ vtar }} </p>
+            <p><strong>Energía de entrada:</strong> {{ E_in }} eV</p>
+            <p><strong>Energía de salida:</strong> {{ E_out }} eV</p>
+            <p><strong>Tiempo de irradiación:</strong> {{ ti }} horas</p>
+            <p><strong>Tiempo de enfriamiento:</strong> {{ tc }} horas</p>
+            <p><strong>Profundidad del target:</strong> {{ vtar }} cm</p>
+            <p><strong>R. Produccion total:</strong> {{ rt }} cm</p>
         </div>
+        {% if valores_tabulados %}
+        <div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Reaccion</th>
+                        <th>Tiempo max[h]</th>
+                        <th>R. parcial[s^-1]</th>
+                        <th>Actividad EOI[Mbq]</th>
+                        <th>#isotopos EOI</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in valores_tabulados %}
+                    <tr>
+                        <td>{{ item.reaction }}</td>
+                        <td>{{ item.t_max }}</td>
+                        <td>{{ item.rti }}</td>
+                        <td>{{ item.Ai }}</td>
+                        <td>{{ item.Ni }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No hay datos disponibles para mostrar.</p>
+        {% endif %}
+        
         <a href="{% url 'rendimiento_api' %}" style="display: block; margin-top: 2vh;">Volver al formulario</a>
     </div>
 {% endblock %}

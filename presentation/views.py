@@ -175,11 +175,25 @@ def rendimiento_api_resultado(request):
         #--->print("\n",rt_dict,"\n",rti_dict)
 
         ## Solve Differential Equations
-        Ni_dict, Np_dict = numero_nucleos(ti, tp, rho_p, A_p, rt_dict, rti_dict, vtar, Bi)
+        Ni_dict, Np_dict, t_max_dict = numero_nucleos(ti, tp, rho_p, A_p, rt_dict, rti_dict, vtar, Bi)
         Ai_dict, Ap_dict = actividad(Ni_dict, Np_dict)
         #print("\n",Ni_dict,"\n", Np_dict)
         #print("\n",Ai_dict,"\n",Ap_dict)
         plot_html = grafico_actividad(ti, tp, Ai_dict, Ap_dict)
+
+        # Datos tabulados
+        valores_tabulados = []
+        for reaction in Np_dict.keys():
+          tabular_dict = {
+              'reaction': reaction,
+              'Ni': f"{Ni_dict[reaction][0].max():.5}",
+              'Ai': f"{(Ai_dict[reaction][0].max()*1e-6):.5}",
+              'rti': f"{rti_dict[reaction][0]:.5}",
+              't_max': f"{t_max_dict[reaction]:.3}",
+          }
+          valores_tabulados.append(tabular_dict)
+
+          rt = f"{rt_dict[reaction][0]:.5}"
 
         # Tiempo de carga:
         elapsed_time = time.time() - start_time
@@ -188,15 +202,16 @@ def rendimiento_api_resultado(request):
         context = {
             'isotope': isotope,
             'projectile': projectile,
-            'current': current,
+            'current': current*1e6,
             'E_in': E_in,
             'E_out': E_out,
             'ti': ti,
             'tc': tp,
-            'rt_dict': rt_dict,
-            'rti': rti_dict,
+            'rt': rt,
             'plot_html': plot_html,
-            'elapsed_time': elapsed_time
+            'elapsed_time': elapsed_time,
+            'valores_tabulados':valores_tabulados,
+            'vtar':f"{vtar:.3}",
         }
 
         return render(request, 'presentation/rendimiento_api_resultado.html', context)
