@@ -17,12 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from calculations.views import rendimiento_ingresar_datos, rendimiento_filtrar_datos, rendimiento_mostrar_resultados, rendimiento_resultados_isotopo, busqueda_simplificada, simplificada_resultado
-from presentation.views import index, rendimiento_api, rendimiento_api_form, rendimiento_api_resultado
+from presentation.views import index, rendimiento_api, rendimiento_api_form, rendimiento_api_resultado, reacciones_disponibles
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index, name="home"),
+    path('datos/',reacciones_disponibles, name='datos_disponibles' ),
 
     path('rendimiento/', rendimiento_ingresar_datos, name="rendimiento_ingresar"),
     path('rendimiento/seleccionar', rendimiento_filtrar_datos, name="rendimiento_filtrar"),

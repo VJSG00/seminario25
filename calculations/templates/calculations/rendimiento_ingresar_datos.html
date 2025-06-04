@@ -87,9 +87,10 @@
     <h2>Cálculo de Rendimiento</h2>
     <form method="post" action="{% url 'rendimiento_filtrar' %}">
         {% csrf_token %}
+        <a href="{% url 'datos_disponibles' %}" style="display: block; margin-top: 2vh;">Datos disponibles</a>
 
         <div class="form-container">
-            
+
             <div class="form-group">
                 <label>Datos:</label>
                 <div class="ratio-input">

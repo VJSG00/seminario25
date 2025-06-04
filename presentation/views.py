@@ -5,6 +5,7 @@ from django.core.cache import cache
 
 # Otros paquetes
 import time
+from calculations.models import Reaction
 from calculations.utils.validaciones import validar_datos_API
 import numpy as np
 import pandas as pd
@@ -24,12 +25,34 @@ from .utils.elementos import densidad, elementos
 from presentation.utils.calculations.workflow import workflow
 from presentation.utils.calculations.diferential_equation import actividad, numero_nucleos
 
+
 # Create your views here.
 def index(request):
     return render(request, "presentation/index.html", {})
 
 def rendimiento_api(request):
     return render(request, "presentation/rendimiento_ingresar_datos.html", {})
+
+def reacciones_disponibles(request):
+
+    # reacciones_unicas = Reaction.objects.using('nuclear_data').order_by('reaction').values_list('reaction', flat=True).distinct()
+
+    targets_unicos = Reaction.objects.using('nuclear_data').order_by('target').values_list('target', flat=True).distinct()
+
+    productos_unicos = Reaction.objects.using('nuclear_data') \
+        .exclude(product__isnull=True) \
+        .exclude(product='') \
+        .order_by('product') \
+        .values_list('product', flat=True) \
+        .distinct()
+
+    context = {
+        # 'reacciones_unicas': reacciones_unicas,
+        'targets_unicos': targets_unicos,
+        'productos_unicos':productos_unicos,
+    }
+
+    return render(request, "presentation/datos_disponibles.html", context)
 
 def rendimiento_api_form(request):
     
