@@ -68,7 +68,7 @@
                             <th>Tiempo max.</th>
                             <th>Energia optima</th>
                             <th>R. parcial[s^-1]</th>
-                            <th>R. total[s^-1]</th>
+                            {% comment %} <th>R. total[s^-1]</th> {% endcomment %}
                             <th>Vol. target[cm^3]</th>
                             <th>Actividad EOI[Mbq]</th>
                             <th>#isotopos EOI</th>
@@ -83,7 +83,7 @@
                             <td>{{ item.tiempo_max }}</td>
                             <td>{{ item.energia_max }}</td>
                             <td>{{ item.ratio_produccion }}</td>
-                            <td>{{ item.ratio_total }}</td>
+                            {% comment %} <td>{{ item.ratio_total }}</td> {% endcomment %}
                             <td>{{ item.volumen_target }}</td>
                             <td>{{ item.actividad_max }}</td>
                             <td>{{ item.nucleos_max }}</td>

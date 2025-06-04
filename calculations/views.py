@@ -373,23 +373,32 @@ def rendimiento_mostrar_resultados(request):
         
         # Grafico 
         plot_html = grafico_actividad(ti, tp, datos_finales, products)
+        # Tabla
+
 
         # Tiempo de carga:
         elapsed_time = time.time() - start_time
 
-        # # Tabular los datos:
-        # tabla = []
-        # for v in datos_finales.values():
-        #     value = {
-        #         "reaccion":v['reaction'],
-        #         "proyectil":v['projectile'],
-        #         "blanco":v['target_symbol'],
-        #         #aqui añadir mas cosas.
-        #     }
+        # Tabular los datos:
+        tabla = []
+        for reaction, data in datos_finales.items():
+            if reaction =="no_elastic_data":
+                continue
+            try:
+                value = {
+                    "reaccion":f"{data[0]['reaction']}",
+                    "proyectil":data[0]['projectile'],
+                    "rt": f"{datos_finales['no_elastic_data'][0]['rt_prod']:.6}",
+                    "rti":f"{data[0]['rti']:.6}",
+                    "Ai":f"{data[0]['A_list'][0]['Ai'].max()*1e-6:.6}",
+                    "Ni": f"{data[0]['N_list'][0]['Ni'].max():.6}"
+                    #aqui añadir mas cosas.
+                }
+            except:
+                continue
 
-        #     tabla.append(value)
+            tabla.append(value)
 
-        # paginator = Paginator(paginar, 5)  # Mostrar 5 elementos por página
 
 
         #--------------------------------------------------------------------------------
@@ -397,14 +406,15 @@ def rendimiento_mostrar_resultados(request):
         context = {
             'isotope': isotope,
             'projectile': projectile,
-            'current': current*1e6,
+            'current': f"{current*1e6:.3}",
             'E_in': E_in,
             'E_out': E_out,
-            'vtar':vtar,
+            'vtar':f"{vtar:.3}",
             'ti': ti,
             'tc': tp,
             'plot_html': plot_html,
             'elapsed_time': elapsed_time,
+            'tabla_data': tabla
         }
 
         return render(request, 'calculations/rendimiento_resultado_target.html', context)

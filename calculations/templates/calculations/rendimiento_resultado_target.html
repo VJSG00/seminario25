@@ -32,9 +32,8 @@
         }
 
         .data-table th {
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
+            background-color: white;
+            color: black;
             text-transform: uppercase;
         }
 
@@ -59,12 +58,12 @@
         <div style="text-align: left; padding: 2vh;">
             <p><strong>Isótopo:</strong> {{ isotope }}</p>
             <p><strong>Proyectil:</strong> {{ projectile }}</p>
-            <p><strong>Corriente:</strong> {{ current }} μA</p>
-            <p><strong>Energía deEntrada:</strong> {{ E_in }} eV</p>
-            <p><strong>Energía de Salida:</strong> {{ E_out }} eV</p>
-            <p><strong>Tiempo de Irradiación:</strong> {{ ti }} horas</p>
-            <p><strong>Tiempo de Enfriamiento:</strong> {{ tc }} horas</p>
-            <p><strong>Volumen del target:</strong> {{ vtar }} </p>
+            <p><strong>Corriente:</strong> {{ current }} [μA]</p>
+            <p><strong>Energía deEntrada:</strong> {{ E_in }} [eV]</p>
+            <p><strong>Energía de Salida:</strong> {{ E_out }} [eV]</p>
+            <p><strong>Tiempo de Irradiación:</strong> {{ ti }} [horas]</p>
+            <p><strong>Tiempo de Enfriamiento:</strong> {{ tc }} [horas]</p>
+            <p><strong>Profundidad del target:</strong> {{ vtar }} [cm]</p>
         </div>
 
         {% if tabla_data %}
@@ -72,18 +71,25 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Proyectil</th>
                         <th>Reaccion</th>
-                        <th>Target</th>
+                        <th>Proyectil</th>
+                        <th>R. parcial[s^-1]</th>
+                        <th>R. total[s^-1]</th>
+                        <th>Actividad EOI[Mbq]</th>
+                        <th>#isotopos EOI</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in tabla_data %}
                     <tr>
-                        <td>{{ item.projectile }}</td>
-                        <td>{{ item.reaction }}</td>
-                        <td>{{ item.target_symbol }}</td>
+                        <td>{{ item.reaccion }}</td>
+                        <td>{{ item.proyectil }}</td>
+                        <td>{{ item.rti }}</td>
+                        <td>{{ item.rt }}</td>
+                        <td>{{ item.Ai }}</td>
+                        <td>{{ item.Ni }}</td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

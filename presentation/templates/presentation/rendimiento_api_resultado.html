@@ -57,13 +57,13 @@
         <div style="text-align: left; padding: 2vh;">
             <p><strong>Isótopo:</strong> {{ isotope }}</p>
             <p><strong>Proyectil:</strong> {{ projectile }}</p>
-            <p><strong>Corriente:</strong> {{ current }} μA</p>
-            <p><strong>Energía de entrada:</strong> {{ E_in }} eV</p>
-            <p><strong>Energía de salida:</strong> {{ E_out }} eV</p>
-            <p><strong>Tiempo de irradiación:</strong> {{ ti }} horas</p>
-            <p><strong>Tiempo de enfriamiento:</strong> {{ tc }} horas</p>
-            <p><strong>Profundidad del target:</strong> {{ vtar }} cm</p>
-            <p><strong>R. Produccion total:</strong> {{ rt }} cm</p>
+            <p><strong>Corriente:</strong> {{ current }} [μA]</p>
+            <p><strong>Energía de entrada:</strong> {{ E_in }} [eV]</p>
+            <p><strong>Energía de salida:</strong> {{ E_out }} [eV]</p>
+            <p><strong>Tiempo de irradiación:</strong> {{ ti }} [horas]</p>
+            <p><strong>Tiempo de enfriamiento:</strong> {{ tc }} [horas]</p>
+            <p><strong>Profundidad del target:</strong> {{ vtar }} [cm]</p>
+            <p><strong>R. Produccion total:</strong> {{ rt }} [s^-1]</p>
         </div>
         {% if valores_tabulados %}
         <div>
@@ -71,9 +71,9 @@
                 <thead>
                     <tr>
                         <th>Reaccion</th>
-                        <th>Tiempo max[h]</th>
-                        <th>R. parcial[s^-1]</th>
-                        <th>Actividad EOI[Mbq]</th>
+                        <th>Tiempo max [h]</th>
+                        <th>R. parcial [s^-1]</th>
+                        <th>Actividad EOI [Mbq]</th>
                         <th>#isotopos EOI</th>
 
                     </tr>

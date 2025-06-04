@@ -210,7 +210,7 @@ def calcular_actividad_nucleos_simplificado(resultado):
 
     resultado_final[tag] = {
     'target_symbol': target.symbol,
-    'projectile': product.symbol,
+    'projectile': data['projectile'],
     'reaction': data['reaction'],
     'N_max':Ni_max,
     't_max': t_max,
